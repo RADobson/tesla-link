@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>White Lotus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,640&family=Outfit:wght@360;500;640&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #10140f;
+      --card: rgba(244, 239, 230, 0.045);
+      --line: rgba(243, 236, 223, 0.14);
+      --ink: #f4efe6;
+      --muted: #b4a894;
+      --solar: #f0b429;
+      --battery: #9dce9a;
+      --export: #7eb0c8;
+      --import: #e08a6d;
+      --danger: #e07a62;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Outfit, "Avenir Next", system-ui, sans-serif;
+      background:
+        radial-gradient(900px 420px at 0% -10%, rgba(240, 180, 41, 0.18), transparent 55%),
+        radial-gradient(700px 420px at 100% 0%, rgba(126, 176, 200, 0.12), transparent 50%),
+        var(--bg);
+    }
+    a { color: inherit; }
+    header, main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    header { display: flex; align-items: flex-end; justify-content: space-between; padding: 28px 0 8px; gap: 16px; }
+    .brand { display: flex; gap: 12px; align-items: center; text-decoration: none; }
+    .brand svg { width: 36px; height: 36px; }
+    .brand strong { display: block; font-family: Fraunces, Georgia, serif; font-size: 1.35rem; letter-spacing: -0.03em; }
+    .brand span { color: var(--muted); font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase; }
+    nav a { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; }
+    nav a:hover { color: var(--ink); border-color: var(--solar); }
+    .board { display: grid; grid-template-columns: 1.35fr 0.85fr; gap: 16px; padding: 18px 0 64px; }
+    .span2 { grid-column: span 2; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 22px; }
+    .kicker { margin: 0; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.72rem; }
+    .solar-num { font-family: Fraunces, Georgia, serif; font-weight: 500; font-size: clamp(4.4rem, 8vw, 7rem); line-height: 0.84; letter-spacing: -0.045em; margin: 10px 0 0; }
+    .solar-num em { font-style: normal; color: var(--solar); font-size: 0.38em; margin-left: 8px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
+    .stats.split { grid-template-columns: 1fr 1fr; }
+    .stat { padding: 12px 0 0; border-top: 1px solid var(--line); }
+    .stat b { display: block; font-family: Fraunces, Georgia, serif; font-size: 1.55rem; font-weight: 500; }
+    .stat span { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .flow { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; min-height: 220px; }
+    .node { text-align: center; }
+    .node b { display: block; font-family: Fraunces, Georgia, serif; font-size: 1.4rem; }
+    .node span { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .score { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; }
+    .score strong { font-family: Fraunces, Georgia, serif; font-size: 2.4rem; font-weight: 500; display: block; }
+    .bar { height: 10px; border-radius: 99px; background: #2a241c; overflow: hidden; margin: 14px 0; }
+    .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--solar), var(--battery)); }
+    .map { position: relative; min-height: 230px; overflow: hidden; background:
+      linear-gradient(rgba(244,239,230,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(244,239,230,0.05) 1px, transparent 1px);
+      background-size: 28px 28px; border-radius: 18px; }
+    .blob { position: absolute; inset: 18% 16%; border-radius: 50%; background: radial-gradient(circle, rgba(240,180,41,0.55), rgba(240,180,41,0.05) 70%); filter: blur(8px); }
+    .map p { position: absolute; left: 16px; bottom: 12px; margin: 0; color: var(--muted); }
+    .chart { width: 100%; height: 180px; }
+    .chart polyline { fill: none; stroke-width: 2.5; }
+    .legend { display: flex; gap: 14px; color: var(--muted); font-size: 0.8rem; }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 99px; margin-right: 6px; }
+    button, .btn { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; cursor: pointer; }
+    button.primary { background: var(--solar); color: #1a1408; border-color: transparent; font-weight: 640; }
+    button.danger { border-color: var(--danger); color: var(--danger); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .controls { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 16px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    label.slider { display: block; margin: 14px 0; }
+    label.slider span { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem; }
+    input[type="range"] { width: 100%; accent-color: var(--solar); }
+    .stepper { display: flex; gap: 8px; margin: 16px 0; }
+    .stepper b { flex: 1; border-top: 2px solid var(--line); padding-top: 8px; color: var(--muted); font-weight: 500; font-size: 0.78rem; }
+    .stepper b.on { border-color: var(--solar); color: var(--ink); }
+    .exact { font-family: Fraunces, Georgia, serif; font-size: 1.8rem; margin: 8px 0; }
+    dialog { border: 1px solid var(--line); background: #171c16; color: var(--ink); border-radius: 20px; padding: 22px; width: min(420px, calc(100% - 32px)); }
+    dialog::backdrop { background: rgba(0,0,0,0.55); }
+    dialog p { color: var(--muted); }
+    .banner { color: #1a1408; background: var(--solar); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; }
+    .login { max-width: 460px; margin: 48px auto; }
+    input[type="text"], input[type="password"], textarea { width: 100%; background: #0d110c; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; }
+    .error { color: var(--danger); min-height: 1.2em; }
+    @media (max-width: 860px) {
+      .board, .controls, .stats { grid-template-columns: 1fr; }
+      .span2 { grid-column: auto; }
+      header { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body data-page="__PAGE__">
+  <header>
+    <a class="brand" href="/">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="none" stroke="#f0b429" stroke-width="2"/><path d="M32 10c8 10 8 16 0 24-8-8-8-14 0-24zm0 20c10 4 16 8 18 16-12-2-16-6-18-16zm0 0c-10 4-16 8-18 16 12-2 16-6 18-16z" fill="#f4efe6"/></svg>
+      <div><span>Home energy</span><strong>White Lotus</strong></div>
+    </a>
+    <nav id="nav"></nav>
+  </header>
+  <main id="app"></main>
+  <dialog id="confirm">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-detail"></p>
+    <div class="row"><button type="button" id="confirm-no">Cancel</button><button type="button" class="primary" id="confirm-yes">Send command</button></div>
+  </dialog>
+  <script type="application/json" id="boot">__BOOT_JSON__</script>
+  <script nonce="__NONCE__">
+    const page = document.body.dataset.page;
+    const boot = JSON.parse(document.getElementById("boot").textContent || "null");
+    const app = document.getElementById("app");
+    const nav = document.getElementById("nav");
+    nav.innerHTML = page === "public" || page === "login" ? '<a href="/login">Owner</a>' : '<a href="/">Dashboard</a>';
+
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function kw(watts) { return (Number(watts || 0) / 1000).toFixed(1); }
+    function money(value, currency) {
+      try { return new Intl.NumberFormat("en-AU", { style: "currency", currency: currency || "AUD" }).format(value || 0); }
+      catch { return "$" + Number(value || 0).toFixed(2); }
+    }
+    function ask(title, detail) {
+      const dialog = document.getElementById("confirm");
+      document.getElementById("confirm-title").textContent = title;
+      document.getElementById("confirm-detail").textContent = detail;
+      dialog.showModal();
+      return new Promise((resolve) => {
+        const yes = document.getElementById("confirm-yes");
+        const no = document.getElementById("confirm-no");
+        const finish = (value) => { yes.onclick = null; no.onclick = null; dialog.close(); resolve(value); };
+        yes.onclick = () => finish(true);
+        no.onclick = () => finish(false);
+      });
+    }
+
+    function chart(history) {
+      const points = history || [];
+      if (points.length < 2) return "<p>No history yet.</p>";
+      const w = 640, h = 170;
+      const max = Math.max(500, ...points.map((p) => Math.max(p.solarW || 0, p.homeW || 0, Math.abs(p.gridW || 0))));
+      const x = (i) => (i / (points.length - 1)) * (w - 8) + 4;
+      const y = (v) => h - 12 - (Math.max(0, v) / max) * (h - 24);
+      const line = (key) => points.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(key === "gridW" ? Math.abs(p.gridW || 0) : p[key] || 0).toFixed(1)).join(" ");
+      return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Last 24 hours">
+        <path fill="none" stroke="#f0b429" stroke-width="2.5" d="${line("solarW")}"></path>
+        <path fill="none" stroke="#f4efe6" stroke-width="2.5" d="${line("homeW")}"></path>
+        <path fill="none" stroke="#7eb0c8" stroke-width="2.5" d="${line("gridW")}"></path>
+      </svg>
+      <div class="legend"><span><i style="background:#f0b429"></i>Solar</span><span><i style="background:#f4efe6"></i>Home</span><span><i style="background:#7eb0c8"></i>Grid</span></div>`;
+    }
+
+    function dashboardHtml(data, exact) {
+      const e = data.energy || {};
+      const v = data.vehicle || {};
+      const s = data.score || {};
+      const share = Math.round((s.solarShare || 0) * 100);
+      const gridLabel = Math.abs(e.gridW || 0) < 50 ? "Grid quiet" : ((e.gridW || 0) < 0 ? "Exporting" : "Importing");
+      const batteryLabel = (e.batteryW || 0) >= 0 ? "Charging" : "Discharging";
+      const sunny = (e.solarW || 0) > 200;
+      const hero = sunny
+        ? `${kw(e.solarW)}<em>kW solar</em>`
+        : `${v.batteryPercent == null ? "—" : Math.round(v.batteryPercent)}<em>% in the car</em>`;
+      return `
+        <section class="card span2">
+          <p class="kicker">${esc(data.vehicleName || "White Lotus")} · ${sunny ? "generating" : "roof is quiet"} · ${data.stale ? "waiting for a fresh sample" : "live"}</p>
+          <p class="solar-num">${hero}</p>
+          <div class="stats">
+            <div class="stat"><b>${kw(e.homeW)}</b><span>Home kW</span></div>
+            <div class="stat"><b>${e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%"}</b><span>Battery · ${batteryLabel}</span></div>
+            <div class="stat"><b>${kw(Math.abs(e.gridW || 0))}</b><span>${gridLabel}</span></div>
+            <div class="stat"><b>${v.batteryPercent == null ? "—" : Math.round(v.batteryPercent) + "%"}</b><span>Car · ${esc(v.chargingState || (v.online ? "Online" : "Asleep"))}</span></div>
+          </div>
+        </section>
+        <section class="card">
+          <p class="kicker">Last 24 hours</p>
+          ${chart(data.history)}
+        </section>
+        <section class="card">
+          <p class="kicker">Where the watts are going</p>
+          <div class="stats split">
+            <div class="stat"><b>${kw(e.solarW)}</b><span>From the roof</span></div>
+            <div class="stat"><b>${kw(e.homeW)}</b><span>Into the house</span></div>
+            <div class="stat"><b>${kw(Math.abs(e.batteryW || 0))}</b><span>Battery ${batteryLabel.toLowerCase()}</span></div>
+            <div class="stat"><b>${kw(Math.abs(e.gridW || 0))}</b><span>${gridLabel}</span></div>
+          </div>
+          <p>Live powers only. The car's own battery is separate from the home battery.</p>
+        </section>
+        <section class="card">
+          <p class="kicker">Solar score · this week</p>
+          <div class="score"><div><strong>${esc(s.kmDriven ?? 0)}</strong><span class="kicker">km driven</span></div><div><strong>${share}%</strong><span class="kicker">from live solar</span></div></div>
+          <div class="bar"><i style="width:${share}%"></i></div>
+          <p>${esc(Number(s.solarKwh || 0).toFixed(1))} kWh of charging from the roof, ${esc(Number(s.gridKwh || 0).toFixed(1))} kWh from the grid. About ${esc(money(s.dollarsSaved, s.currency))} kept off the bill.</p>
+        </section>
+        <section class="card">
+          <p class="kicker">${exact ? "Exact position · owner only" : "Coarse area · 20 km"}</p>
+          ${exact ? `<p class="exact">${esc(Number(exact.lat).toFixed(5))}, ${esc(Number(exact.lon).toFixed(5))}</p><p>${exact.sample ? "Sample position for this preview." : "Live vehicle position."}</p>` : `<div class="map"><div class="blob"></div><p>The house is not on this map. Recent trips are held back 24 hours.</p></div>`}
+        </section>`;
+    }
+
+    async function showPublic() {
+      app.innerHTML = "<p class='kicker'>Loading the house…</p>";
+      const response = await fetch("/api/public/dashboard");
+      const data = await response.json();
+      app.innerHTML = `<div class="board">${dashboardHtml(data, null)}</div>`;
+    }
+
+    async function showLogin() {
+      const status = await fetch("/api/auth/status").then((r) => r.json());
+      const register = status.passkeys === 0;
+      app.innerHTML = `<section class="card login">
+        <p class="kicker">Owner</p>
+        <h1>${register ? "Create the passkey" : "Sign in"}</h1>
+        <p>${register ? "One passkey, then registration locks. If a setup code was configured, it is required for this first passkey." : "This desk only opens with the owner's passkey."}</p>
+        ${register ? '<label>Setup code<input id="setup" type="password" autocomplete="off"></label>' : ""}
+        <p class="error" id="err"></p>
+        <button class="primary" id="go" type="button">${register ? "Create passkey" : "Use passkey"}</button>
+      </section>`;
+      document.getElementById("go").onclick = async () => {
+        const err = document.getElementById("err");
+        err.textContent = "";
+        try {
+          const setupCode = document.getElementById("setup")?.value || "";
+          const kind = register ? "register" : "login";
+          const start = await fetch(`/api/auth/${kind}/options`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(register ? { setupCode } : {}) });
+          const started = await start.json();
+          if (!start.ok) throw new Error(started.error || "Could not start");
+          const publicKey = register
+            ? PublicKeyCredential.parseCreationOptionsFromJSON(started.options)
+            : PublicKeyCredential.parseRequestOptionsFromJSON(started.options);
+          const credential = register
+            ? await navigator.credentials.create({ publicKey })
+            : await navigator.credentials.get({ publicKey });
+          const done = await fetch(`/api/auth/${kind}/verify`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ challengeId: started.challengeId, credential: credential.toJSON(), setupCode }) });
+          const result = await done.json();
+          if (!done.ok) throw new Error(result.error || "Passkey was not accepted");
+          location.href = "/controls";
+        } catch (error) {
+          err.textContent = error.message || "Passkey failed";
+        }
+      };
+    }
+
+    function controlDesk(model, preview) {
+      const data = model.dashboard;
+      const settings = model.settings;
+      app.innerHTML = `<div class="board controls">
+        ${preview ? '<p class="banner span2">Mock preview. Buttons ask for confirmation and then stop. Nothing is sent.</p>' : ""}
+        <section class="card">
+          <p class="kicker">Plug & charge</p>
+          <h2>One button</h2>
+          <p id="plug-message">${esc(model.plug.message)}</p>
+          <div class="stepper" id="steps"></div>
+          <div class="row"><button class="primary" id="plug" type="button">Plug & charge</button><button id="plug-cancel" type="button">Cancel</button></div>
+          <div class="row" style="margin-top:14px"><button id="start" type="button">Start charging</button><button class="danger" id="stop" type="button">Stop charging</button></div>
+        </section>
+        <section class="card">
+          <p class="kicker">Limits</p>
+          <label class="slider"><span>Tesla charge limit <b id="limit-label">${esc(settings.chargeLimit)}%</b></span><input id="limit" type="range" min="50" max="100" value="${esc(settings.chargeLimit)}"></label>
+          <label class="slider"><span>Tesla charging amps <b id="amps-label">${esc(settings.amps)} A</b></span><input id="amps" type="range" min="5" max="32" value="${esc(settings.amps)}"></label>
+          <label class="slider"><span>Home battery charge limit <b id="soc-label">${esc(settings.chargeSoc)}%</b></span><input id="soc" type="range" min="10" max="100" value="${esc(settings.chargeSoc)}"></label>
+          <div class="row">
+            <button data-apply="limit" type="button">Apply charge limit</button>
+            <button data-apply="amps" type="button">Apply amps</button>
+            <button data-apply="soc" type="button">Apply battery limit</button>
+          </div>
+          <p class="kicker" style="margin-top:18px">Charger mode</p>
+          <div class="row">
+            <button data-mode="pv_surplus" type="button">Solar only</button>
+            <button data-mode="fast" type="button">Fast</button>
+            <button id="climate-on" type="button">Climate on</button>
+            <button id="climate-off" type="button">Climate off</button>
+          </div>
+          <p class="error" id="err"></p>
+        </section>
+        <section class="card">
+          <p class="kicker">Exact position · owner only</p>
+          ${model.exact ? `<p class="exact">${esc(Number(model.exact.lat).toFixed(5))}, ${esc(Number(model.exact.lon).toFixed(5))}</p><p>${model.exact.sample ? "Sample position for this preview. The public map only shows a 20 km cell." : "Live vehicle position. It is not on the public dashboard."}</p>` : "<p>No position stored yet.</p>"}
+          <p>Car ${esc(data.vehicle?.batteryPercent ?? "—")}% · ${esc(data.vehicle?.chargingState || "unknown")}</p>
+        </section>
+        <section class="card">
+          <p class="kicker">Connections</p>
+          <p>${model.status?.tesla ? "Tesla linked" : "Tesla not linked"} · ${model.status?.sigen ? "Sigen linked" : "Sigen not linked"}</p>
+          ${preview ? "" : `<div class="row"><button id="tesla-start" type="button">Start Tesla sign-in</button></div>
+            <label>Paste the callback URL<textarea id="tesla-url" rows="3"></textarea></label>
+            <button id="tesla-finish" type="button">Save Tesla connection</button>
+            <div class="row"><button id="sigen-start" type="button">Build Sigen sign-in link</button></div>
+            <p id="sigen-url"></p>
+            <label>Access token<input id="sigen-access" type="password" autocomplete="off"></label>
+            <label>Refresh token<input id="sigen-refresh" type="password" autocomplete="off"></label>
+            <button id="sigen-import" type="button">Import Sigen tokens</button>`}
+        </section>
+      </div>`;
+      paintSteps(model.plug.phase);
+      wireSliders();
+      wireCommands(preview);
+    }
+
+    function paintSteps(phase) {
+      const order = ["opening_port", "waiting_for_cable", "starting_charge", "charging"];
+      const labels = ["Open port", "Wait for cable", "Start charger", "Charging"];
+      const active = order.indexOf(phase);
+      document.getElementById("steps").innerHTML = labels.map((label, i) => `<b class="${i <= active ? "on" : ""}">${label}</b>`).join("");
+    }
+
+    function wireSliders() {
+      for (const [id, label, suffix] of [["limit", "limit-label", "%"], ["amps", "amps-label", " A"], ["soc", "soc-label", "%"]]) {
+        const input = document.getElementById(id);
+        input.oninput = () => { document.getElementById(label).textContent = input.value + suffix; };
+      }
+    }
+
+    async function post(path, body, title, detail, preview) {
+      if (!(await ask(title, detail))) return null;
+      if (preview) {
+        document.getElementById("err").textContent = "Mocked. Nothing was sent.";
+        return { mocked: true };
+      }
+      const session = await fetch("/api/session").then((r) => r.json());
+      const response = await fetch(path, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken || "" },
+        body: JSON.stringify({ ...body, confirm: true }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Command failed");
+      return payload;
+    }
+
+    function wireCommands(preview) {
+      const err = document.getElementById("err");
+      const run = (fn) => fn().catch((error) => { err.textContent = error.message || "Command failed"; });
+      document.getElementById("plug").onclick = () => run(async () => {
+        const state = await post("/api/controls/plug-charge", {}, "Plug and charge", "Open the charge port, watch for the cable for up to 5 minutes, then start the charger.", preview);
+        if (state && !state.mocked) { document.getElementById("plug-message").textContent = state.message; paintSteps(state.phase); watchPlug(); }
+        if (state && state.mocked) { document.getElementById("plug-message").textContent = "Port would open, then the desk would wait for the cable."; paintSteps("waiting_for_cable"); }
+      });
+      document.getElementById("plug-cancel").onclick = () => run(() => post("/api/controls/plug-charge/cancel", {}, "Cancel plug and charge", "Stop waiting for the cable.", preview));
+      document.getElementById("start").onclick = () => run(() => post("/api/controls/charge/start", {}, "Start charging", "Start the Sigen AC charger and send Tesla charge start.", preview));
+      document.getElementById("stop").onclick = () => run(() => post("/api/controls/charge/stop", {}, "Stop charging", "Stop the Sigen AC charger and send Tesla charge stop.", preview));
+      document.querySelector("[data-apply=limit]").onclick = () => run(() => post("/api/controls/tesla/charge-limit", { percent: Number(document.getElementById("limit").value) }, "Set charge limit", "Set the Tesla charge limit to " + document.getElementById("limit").value + "%.", preview));
+      document.querySelector("[data-apply=amps]").onclick = () => run(() => post("/api/controls/tesla/amps", { amps: Number(document.getElementById("amps").value) }, "Set charging amps", "Set Tesla charging amps to " + document.getElementById("amps").value + ".", preview));
+      document.querySelector("[data-apply=soc]").onclick = () => run(() => post("/api/controls/sigen/charge-soc", { chargeSoc: Number(document.getElementById("soc").value) }, "Set battery charge limit", "Change only chargeSOC. The other battery SOC values stay as they are.", preview));
+      document.querySelector("[data-mode=pv_surplus]").onclick = () => run(() => post("/api/controls/sigen/charger-mode", { mode: "pv_surplus" }, "Solar-only charging", "Switch the AC charger to photovoltaic surplus.", preview));
+      document.querySelector("[data-mode=fast]").onclick = () => run(() => post("/api/controls/sigen/charger-mode", { mode: "fast" }, "Fast charging", "Switch the AC charger to fast mode.", preview));
+      document.getElementById("climate-on").onclick = () => run(() => post("/api/controls/climate", { on: true }, "Climate on", "Turn the cabin climate on.", preview));
+      document.getElementById("climate-off").onclick = () => run(() => post("/api/controls/climate", { on: false }, "Climate off", "Turn the cabin climate off.", preview));
+      if (!preview) wireOwner();
+    }
+
+    async function watchPlug() {
+      for (let i = 0; i < 80; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const state = await fetch("/api/controls/plug-charge").then((r) => r.json());
+        const message = document.getElementById("plug-message");
+        if (!message) return;
+        message.textContent = state.message || state.phase;
+        paintSteps(state.phase);
+        if (["charging", "timed_out", "failed", "cancelled", "idle"].includes(state.phase)) return;
+      }
+    }
+
+    function wireOwner() {
+      document.getElementById("tesla-start").onclick = async () => {
+        if (!(await ask("Start Tesla sign-in", "Open Tesla and approve this app. Then paste the callback URL back here."))) return;
+        const session = await fetch("/api/session").then((r) => r.json());
+        const response = await fetch("/api/owner/tesla/start", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true }) });
+        const payload = await response.json();
+        if (payload.url) location.href = payload.url;
+      };
+      document.getElementById("tesla-finish").onclick = async () => {
+        if (!(await ask("Save Tesla connection", "Exchange the pasted callback for this app's own refresh token."))) return;
+        const session = await fetch("/api/session").then((r) => r.json());
+        const response = await fetch("/api/owner/tesla/finish", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true, callbackUrl: document.getElementById("tesla-url").value }) });
+        const payload = await response.json();
+        document.getElementById("err").textContent = response.ok ? "Tesla connected as " + (payload.name || "the car") + "." : (payload.error || "Tesla connection failed");
+      };
+      document.getElementById("sigen-start").onclick = async () => {
+        if (!(await ask("Build Sigen link", "Open the Sigen authorization page. If it will not return here, paste the tokens below."))) return;
+        const session = await fetch("/api/session").then((r) => r.json());
+        const response = await fetch("/api/owner/sigen/start", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true }) });
+        const payload = await response.json();
+        document.getElementById("sigen-url").textContent = payload.url || payload.error || "";
+      };
+      document.getElementById("sigen-import").onclick = async () => {
+        if (!(await ask("Import Sigen tokens", "Store the access and refresh tokens for this house. They stay in the token vault."))) return;
+        const session = await fetch("/api/session").then((r) => r.json());
+        const response = await fetch("/api/owner/sigen/import", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true, accessToken: document.getElementById("sigen-access").value, refreshToken: document.getElementById("sigen-refresh").value, expiresIn: 3600 }) });
+        const payload = await response.json();
+        document.getElementById("err").textContent = response.ok ? "Sigen tokens stored." : (payload.error || "Import failed");
+      };
+    }
+
+    async function showControls() {
+      const session = await fetch("/api/session").then((r) => r.json());
+      if (!session.authenticated) { location.href = "/login"; return; }
+      const state = await fetch("/api/controls/state").then((r) => r.json());
+      const map = await fetch("/api/controls/map");
+      state.exact = map.ok ? await map.json() : null;
+      controlDesk(state, false);
+      if (state.plug && ["opening_port", "waiting_for_cable", "starting_charge"].includes(state.plug.phase)) watchPlug();
+    }
+
+    if (page === "public") showPublic();
+    if (page === "login") showLogin();
+    if (page === "controls") showControls();
+    if (page === "preview") controlDesk(boot, true);
+  </script>
+</body>
+</html>
