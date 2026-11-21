@@ -46,6 +46,14 @@ const OWNER_ID = utf8("white-lotus-owner");
 export async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   try {
+    if (request.method === "POST" && url.pathname === "/owner/sigen/import") return await ownerSigenImport(request, env);
+    if (request.method === "GET" && (url.pathname === "/owner/tesla/connect" || url.pathname === "/owner/sigen/connect")) {
+      return await ownerConnectLink(request, env, url);
+    }
+    if (request.method === "GET" && (url.pathname === "/callback" || url.pathname === "/callback/")) {
+      const done = await teslaCallback(url, env);
+      if (done) return done;
+    }
     const site = siteResponse(url);
     if (site && request.method === "GET") return site;
     if (url.pathname === "/sigen/callback" && request.method === "POST") return await sigenCallback(request, env);
@@ -248,12 +256,7 @@ async function ownerApi(request: Request, env: Env, path: string): Promise<Respo
   const body = await readJson(request);
   requireConfirm(body);
   if (request.method === "POST" && path === "/api/owner/tesla/start") {
-    const state = bytesToBase64Url(randomBytes(32));
-    const verifier = newVerifier();
-    await env.DB.prepare("INSERT INTO oauth_pending (state, verifier, provider, expires_at) VALUES (?, ?, 'tesla', ?)")
-      .bind(state, verifier, Date.now() + 10 * 60 * 1000)
-      .run();
-    return json({ url: await buildTeslaAuthorizeUrl(env, state, verifier) });
+    return json({ url: await startTesla(env) });
   }
   if (request.method === "POST" && path === "/api/owner/tesla/finish") {
     const parsed = parsePastedCallback({
@@ -261,33 +264,13 @@ async function ownerApi(request: Request, env: Env, path: string): Promise<Respo
       code: typeof body.code === "string" ? body.code : undefined,
       state: typeof body.state === "string" ? body.state : undefined,
     });
-    const pending = await env.DB.prepare("SELECT verifier, expires_at FROM oauth_pending WHERE state = ? AND provider = 'tesla'")
-      .bind(parsed.state)
-      .first<{ verifier: string; expires_at: number }>();
-    await env.DB.prepare("DELETE FROM oauth_pending WHERE state = ?").bind(parsed.state).run();
-    if (!pending || pending.expires_at < Date.now() || !pending.verifier) throw new AppError("oauth_state", 400);
-    const tokens = await exchangeTeslaCode(env, parsed.code, pending.verifier);
-    if (!tokens.access_token || !tokens.refresh_token) throw new AppError("tesla_token_rejected", 502);
-    await vault.importTokens("tesla", {
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiresIn: tokens.expires_in ?? 3600,
-    });
-    const vehicles = parseVehicleList(await teslaJson(env, tokens.access_token, "vehicles"));
-    const chosen = chooseVehicle(vehicles, env.VEHICLE_NAME);
-    if (!chosen) throw new AppError("no_vehicle", 404);
-    await vault.setVehicle({ id: chosen.id, vin: chosen.vin, name: chosen.name || env.VEHICLE_NAME });
-    await audit(env.DB, "tesla_connect", "ok", chosen.name || env.VEHICLE_NAME);
-    return json({ connected: true, name: chosen.name || env.VEHICLE_NAME });
+    const name = await finishTesla(env, parsed.code, parsed.state);
+    return json({ connected: true, name });
   }
   if (request.method === "POST" && path === "/api/owner/sigen/start") {
-    const state = bytesToBase64Url(randomBytes(32));
-    await env.DB.prepare("INSERT INTO oauth_pending (state, verifier, provider, expires_at) VALUES (?, '', 'sigen', ?)")
-      .bind(state, Date.now() + 10 * 60 * 1000)
-      .run();
     const redirect = `${env.APP_ORIGIN}/sigen/callback`;
     return json({
-      url: sigenAuthorizationUrl(env.SIGEN_LOGIN_URL, state, redirect, env.SIGEN_REGION),
+      url: await startSigen(env),
       redirect,
       note: "If the portal only posts back to loopback, paste the tokens instead.",
     });
@@ -301,6 +284,110 @@ async function ownerApi(request: Request, env: Env, path: string): Promise<Respo
     return json({ connected: true });
   }
   throw new AppError("not_found", 404);
+}
+
+async function startTesla(env: Env): Promise<string> {
+  const state = bytesToBase64Url(randomBytes(32));
+  const verifier = newVerifier();
+  await env.DB.prepare("INSERT INTO oauth_pending (state, verifier, provider, expires_at) VALUES (?, ?, 'tesla', ?)")
+    .bind(state, verifier, Date.now() + 10 * 60 * 1000)
+    .run();
+  return buildTeslaAuthorizeUrl(env, state, verifier);
+}
+
+async function startSigen(env: Env): Promise<string> {
+  const state = bytesToBase64Url(randomBytes(32));
+  await env.DB.prepare("INSERT INTO oauth_pending (state, verifier, provider, expires_at) VALUES (?, '', 'sigen', ?)")
+    .bind(state, Date.now() + 10 * 60 * 1000)
+    .run();
+  return sigenAuthorizationUrl(env.SIGEN_LOGIN_URL, state, `${env.APP_ORIGIN}/sigen/callback`, env.SIGEN_REGION);
+}
+
+/**
+ * One-time owner connect link, minted out of band (only its SHA-256 is stored in D1, 15-minute expiry).
+ * Single use: the row is deleted on first visit whether or not it is still valid.
+ */
+async function ownerConnectLink(request: Request, env: Env, url: URL): Promise<Response> {
+  const headers = { "cache-control": "no-store", "referrer-policy": "no-referrer", "x-robots-tag": "noindex" };
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  if (!(await rateLimit(env, `ownerlink:${ip}`, 10, 900))) return new Response("Too many attempts.", { status: 429, headers });
+  const provider = url.pathname === "/owner/tesla/connect" ? "tesla" : "sigen";
+  const token = url.searchParams.get("t") ?? "";
+  if (token.length < 32 || token.length > 128) return new Response("This link is not valid.", { status: 404, headers });
+  const hash = await sha256Hex(token);
+  const row = await env.DB.prepare("SELECT expires_at FROM owner_links WHERE token_hash = ? AND provider = ?").bind(hash, provider).first<{ expires_at: number }>();
+  if (row) await env.DB.prepare("DELETE FROM owner_links WHERE token_hash = ?").bind(hash).run();
+  await env.DB.prepare("DELETE FROM owner_links WHERE expires_at < ?").bind(Date.now()).run();
+  if (!row || row.expires_at < Date.now()) return new Response("This link has expired or was already used.", { status: 404, headers });
+  await audit(env.DB, `${provider}_owner_link`, "used");
+  const target = provider === "tesla" ? await startTesla(env) : await startSigen(env);
+  return new Response(null, { status: 302, headers: { ...headers, location: target } });
+}
+
+/**
+ * Server-to-server import of a Sigen grant made by the official loopback login on the owner's machine.
+ * Authorised by a one-time token minted out of band; D1 holds SHA-256("import:" + token) so connect tokens cannot be used here.
+ */
+async function ownerSigenImport(request: Request, env: Env): Promise<Response> {
+  const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
+  if (!(await rateLimit(env, `ownerlink:${ip}`, 10, 900))) throw new AppError("rate_limited", 429);
+  const body = await readJson(request);
+  const token = typeof body.t === "string" ? body.t : "";
+  if (token.length < 32 || token.length > 128) throw new AppError("not_found", 404);
+  const hash = await sha256Hex(`import:${token}`);
+  const row = await env.DB.prepare("SELECT expires_at FROM owner_links WHERE token_hash = ? AND provider = 'sigen'").bind(hash).first<{ expires_at: number }>();
+  if (row) await env.DB.prepare("DELETE FROM owner_links WHERE token_hash = ?").bind(hash).run();
+  if (!row || row.expires_at < Date.now()) throw new AppError("not_found", 404);
+  const accessToken = stringField(body.accessToken, "access_token");
+  const refreshToken = stringField(body.refreshToken, "refresh_token");
+  const expiresIn = typeof body.expiresIn === "number" && body.expiresIn > 0 ? body.expiresIn : 3600;
+  await env.TOKEN_VAULT.getByName("owner").importTokens("sigen", { accessToken, refreshToken, expiresIn });
+  await audit(env.DB, "sigen_import", "ok", "owner loopback grant");
+  return json({ connected: true });
+}
+
+async function finishTesla(env: Env, code: string, state: string): Promise<string> {
+  const vault = env.TOKEN_VAULT.getByName("owner");
+  const parsed = { code, state };
+  const pending = await env.DB.prepare("SELECT verifier, expires_at FROM oauth_pending WHERE state = ? AND provider = 'tesla'")
+    .bind(parsed.state)
+    .first<{ verifier: string; expires_at: number }>();
+  await env.DB.prepare("DELETE FROM oauth_pending WHERE state = ?").bind(parsed.state).run();
+  if (!pending || pending.expires_at < Date.now() || !pending.verifier) throw new AppError("oauth_state", 400);
+  const tokens = await exchangeTeslaCode(env, parsed.code, pending.verifier);
+  if (!tokens.access_token || !tokens.refresh_token) throw new AppError("tesla_token_rejected", 502);
+  await vault.importTokens("tesla", {
+    accessToken: tokens.access_token,
+    refreshToken: tokens.refresh_token,
+    expiresIn: tokens.expires_in ?? 3600,
+  });
+  const vehicles = parseVehicleList(await teslaJson(env, tokens.access_token, "vehicles"));
+  const chosen = chooseVehicle(vehicles, env.VEHICLE_NAME);
+  if (!chosen) throw new AppError("no_vehicle", 404);
+  await vault.setVehicle({ id: chosen.id, vin: chosen.vin, name: chosen.name || env.VEHICLE_NAME });
+  await audit(env.DB, "tesla_connect", "ok", chosen.name || env.VEHICLE_NAME);
+  return chosen.name || env.VEHICLE_NAME;
+}
+
+/** Tesla returns here. If the state belongs to a pending owner connect, finish it server-side. */
+async function teslaCallback(url: URL, env: Env): Promise<Response | null> {
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  if (!code || !state) return null;
+  const pending = await env.DB.prepare("SELECT 1 AS ok FROM oauth_pending WHERE state = ? AND provider = 'tesla'").bind(state).first<{ ok: number }>();
+  if (!pending) return null;
+  let message = "Tesla is connected. Taking you back to the command centre…";
+  let ok = true;
+  try {
+    await finishTesla(env, code, state);
+  } catch (error) {
+    ok = false;
+    const reason = error instanceof AppError ? error.code : "internal";
+    message = `Tesla didn't connect (${reason}). Go back to the command centre and press Connect Tesla again.`;
+  }
+  // An HTML hop (not a 303) so the return to /controls is a same-site navigation and the SameSite=Strict session cookie is sent.
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><title>White Lotus</title><style>body{font-family:system-ui,sans-serif;margin:2rem;background:#111;color:#f5f5f5}a{color:#9cf}</style></head><body><p>${message}</p><p><a href="/controls">Open the command centre</a></p>${ok ? '<script>setTimeout(function(){location.replace("/controls?tesla=connected")},800)</script>' : ""}</body></html>`;
+  return new Response(html, { status: ok ? 200 : 502, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "referrer-policy": "no-referrer", "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" } });
 }
 
 async function sigenCallback(request: Request, env: Env): Promise<Response> {
@@ -486,7 +573,7 @@ async function readJson(request: Request): Promise<Record<string, unknown>> {
 }
 
 function stringField(value: unknown, code: string): string {
-  if (typeof value !== "string" || value.length < 1 || value.length > 4000) throw new AppError(code);
+  if (typeof value !== "string" || value.length < 1 || value.length > 16000) throw new AppError(code);
   return value;
 }
 

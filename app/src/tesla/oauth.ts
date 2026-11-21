@@ -12,9 +12,9 @@ export async function buildTeslaAuthorizeUrl(env: Env, state: string, verifier: 
   url.searchParams.set("scope", env.TESLA_SCOPES);
   url.searchParams.set("state", state);
   url.searchParams.set("nonce", bytesToBase64Url(randomBytes(16)));
-  url.searchParams.set("code_challenge", challenge);
-  url.searchParams.set("code_challenge_method", "S256");
-  url.searchParams.set("prompt", "login");
+  // Matches the authorize request that already works for this client: confidential client + state, no PKCE.
+  void challenge;
+  url.searchParams.set("prompt_missing_scopes", "true");
   return url.href;
 }
 
@@ -34,21 +34,30 @@ async function tokenPost(env: Env, body: URLSearchParams): Promise<TokenResponse
     headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
     body,
   });
-  const payload = (await response.json()) as TokenResponse;
-  if (!response.ok || !payload.access_token) throw new AppError("tesla_token_rejected", 502);
+  const text = await response.text();
+  let payload: TokenResponse & { error?: string; error_description?: string } = {};
+  try {
+    payload = JSON.parse(text);
+  } catch {
+    /* non-JSON body */
+  }
+  if (!response.ok || !payload.access_token) {
+    // Only Tesla's public error fields are logged, never the request body or tokens.
+    console.error(JSON.stringify({ tesla_token_error: { status: response.status, grant: body.get("grant_type"), error: payload.error ?? null, description: payload.error_description ?? null } }));
+    throw new AppError(payload.error === "invalid_auth_code" ? "tesla_code_expired" : "tesla_token_rejected", 502);
+  }
   return payload;
 }
 
-export async function exchangeTeslaCode(env: Env, code: string, verifier: string): Promise<TokenResponse> {
+export async function exchangeTeslaCode(env: Env, code: string, _verifier: string): Promise<TokenResponse> {
   return tokenPost(
     env,
     new URLSearchParams({
       grant_type: "authorization_code",
       client_id: env.TESLA_CLIENT_ID,
-      client_secret: env.TESLA_CLIENT_SECRET,
+      client_secret: (env.TESLA_CLIENT_SECRET ?? "").trim(),
       code,
       redirect_uri: env.TESLA_REDIRECT_URI,
-      code_verifier: verifier,
       audience: env.TESLA_AUDIENCE,
     }),
   );
@@ -60,7 +69,7 @@ export async function refreshTesla(env: Env, refreshToken: string): Promise<{ ac
     new URLSearchParams({
       grant_type: "refresh_token",
       client_id: env.TESLA_CLIENT_ID,
-      client_secret: env.TESLA_CLIENT_SECRET,
+      client_secret: (env.TESLA_CLIENT_SECRET ?? "").trim(),
       refresh_token: refreshToken,
     }),
   );
@@ -98,4 +107,18 @@ export async function teslaJson(env: Env, token: string, path: string, init: Req
   if (!response.ok) throw new AppError(`tesla_${response.status}`, 502);
   if (!text) return null;
   return JSON.parse(text) as unknown;
+}
+
+/** One-shot diagnostic: validates the client secret with a partner-token request. Logs no secret or token. */
+export async function teslaSecretDiagnostic(env: Env): Promise<void> {
+  const raw = env.TESLA_CLIENT_SECRET ?? "";
+  const trimmed = raw.trim();
+  const fp = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", utf8(trimmed)))).slice(0, 4).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const response = await fetch(env.TESLA_TOKEN_URL, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
+    body: new URLSearchParams({ grant_type: "client_credentials", client_id: env.TESLA_CLIENT_ID, client_secret: trimmed, scope: "openid vehicle_device_data", audience: env.TESLA_AUDIENCE }),
+  });
+  const payload = (await response.json().catch(() => ({}))) as { access_token?: string; error?: string; error_description?: string };
+  console.log(JSON.stringify({ tesla_secret_diag: { rawLength: raw.length, trimmedLength: trimmed.length, hadWhitespace: raw !== trimmed, fp, status: response.status, ok: Boolean(payload.access_token), error: payload.error ?? null } }));
 }

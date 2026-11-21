@@ -254,6 +254,7 @@
       const settings = model.settings;
       app.innerHTML = `<div class="board controls">
         ${preview ? '<p class="banner span2">Mock preview. Buttons ask for confirmation and then stop. Nothing is sent.</p>' : ""}
+        ${preview ? "" : connectionsCard(model)}
         <section class="card">
           <p class="kicker">Plug & charge</p>
           <h2>One button</h2>
@@ -286,22 +287,32 @@
           ${model.exact ? `<p class="exact">${esc(Number(model.exact.lat).toFixed(5))}, ${esc(Number(model.exact.lon).toFixed(5))}</p><p>${model.exact.sample ? "Sample position for this preview. The public map only shows a 20 km cell." : "Live vehicle position. It is not on the public dashboard."}</p>` : "<p>No position stored yet.</p>"}
           <p>Car ${esc(data.vehicle?.batteryPercent ?? "—")}% · ${esc(data.vehicle?.chargingState || "unknown")}</p>
         </section>
-        <section class="card">
-          <p class="kicker">Connections</p>
-          <p>${model.status?.tesla ? "Tesla linked" : "Tesla not linked"} · ${model.status?.sigen ? "Sigen linked" : "Sigen not linked"}</p>
-          ${preview ? "" : `<div class="row"><button id="tesla-start" type="button">Start Tesla sign-in</button></div>
-            <label>Paste the callback URL<textarea id="tesla-url" rows="3"></textarea></label>
-            <button id="tesla-finish" type="button">Save Tesla connection</button>
-            <div class="row"><button id="sigen-start" type="button">Build Sigen sign-in link</button></div>
-            <p id="sigen-url"></p>
-            <label>Access token<input id="sigen-access" type="password" autocomplete="off"></label>
-            <label>Refresh token<input id="sigen-refresh" type="password" autocomplete="off"></label>
-            <button id="sigen-import" type="button">Import Sigen tokens</button>`}
-        </section>
       </div>`;
       paintSteps(model.plug.phase);
       wireSliders();
       wireCommands(preview);
+    }
+
+    function connectionsCard(model) {
+      const tesla = Boolean(model.status?.tesla);
+      const sigen = Boolean(model.status?.sigen);
+      return `<section class="card span2">
+          <p class="kicker">Connections</p>
+          <p>${tesla ? "Tesla connected ✓" : "Tesla not connected"} · ${sigen ? "Sigen connected ✓" : "Sigen not connected"}</p>
+          <div class="row">
+            <button class="${tesla ? "" : "primary"}" id="tesla-start" type="button">${tesla ? "Reconnect Tesla" : "Connect Tesla"}</button>
+            <button class="${sigen ? "" : "primary"}" id="sigen-start" type="button">${sigen ? "Reconnect Sigen" : "Connect Sigen"}</button>
+          </div>
+          <p class="error" id="conn-err"></p>
+          <details style="margin-top:12px"><summary>Manual fallback</summary>
+            <label>Paste the Tesla callback URL<textarea id="tesla-url" rows="3"></textarea></label>
+            <button id="tesla-finish" type="button">Save Tesla connection</button>
+            <p id="sigen-url"></p>
+            <label>Sigen access token<input id="sigen-access" type="password" autocomplete="off"></label>
+            <label>Sigen refresh token<input id="sigen-refresh" type="password" autocomplete="off"></label>
+            <button id="sigen-import" type="button">Import Sigen tokens</button>
+          </details>
+        </section>`;
     }
 
     function paintSteps(phase) {
@@ -370,42 +381,52 @@
 
     function wireOwner() {
       document.getElementById("tesla-start").onclick = async () => {
-        if (!(await ask("Start Tesla sign-in", "Open Tesla and approve this app. Then paste the callback URL back here."))) return;
+        if (!(await ask("Connect Tesla", "Tesla opens, you sign in if asked, and it comes straight back here connected."))) return;
         const session = await fetch("/api/session").then((r) => r.json());
         const response = await fetch("/api/owner/tesla/start", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true }) });
         const payload = await response.json();
-        if (payload.url) location.href = payload.url;
+        if (payload.url) { location.href = payload.url; return; }
+        document.getElementById("conn-err").textContent = payload.error || "Could not start Tesla sign-in";
       };
       document.getElementById("tesla-finish").onclick = async () => {
         if (!(await ask("Save Tesla connection", "Exchange the pasted callback for this app's own refresh token."))) return;
         const session = await fetch("/api/session").then((r) => r.json());
         const response = await fetch("/api/owner/tesla/finish", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true, callbackUrl: document.getElementById("tesla-url").value }) });
         const payload = await response.json();
-        document.getElementById("err").textContent = response.ok ? "Tesla connected as " + (payload.name || "the car") + "." : (payload.error || "Tesla connection failed");
+        document.getElementById("conn-err").textContent = response.ok ? "Tesla connected as " + (payload.name || "the car") + "." : (payload.error || "Tesla connection failed");
       };
       document.getElementById("sigen-start").onclick = async () => {
-        if (!(await ask("Build Sigen link", "Open the Sigen authorization page. If it will not return here, paste the tokens below."))) return;
+        if (!(await ask("Connect Sigen", "Sigen opens. Click Authorize and continue, and it comes back here connected."))) return;
         const session = await fetch("/api/session").then((r) => r.json());
         const response = await fetch("/api/owner/sigen/start", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true }) });
         const payload = await response.json();
-        document.getElementById("sigen-url").textContent = payload.url || payload.error || "";
+        if (payload.url) { location.href = payload.url; return; }
+        document.getElementById("conn-err").textContent = payload.error || "Could not start Sigen sign-in";
       };
       document.getElementById("sigen-import").onclick = async () => {
         if (!(await ask("Import Sigen tokens", "Store the access and refresh tokens for this house. They stay in the token vault."))) return;
         const session = await fetch("/api/session").then((r) => r.json());
         const response = await fetch("/api/owner/sigen/import", { method: "POST", headers: { "content-type": "application/json", "x-csrf-token": session.csrfToken }, body: JSON.stringify({ confirm: true, accessToken: document.getElementById("sigen-access").value, refreshToken: document.getElementById("sigen-refresh").value, expiresIn: 3600 }) });
         const payload = await response.json();
-        document.getElementById("err").textContent = response.ok ? "Sigen tokens stored." : (payload.error || "Import failed");
+        document.getElementById("conn-err").textContent = response.ok ? "Sigen tokens stored." : (payload.error || "Import failed");
       };
     }
 
     async function showControls() {
       const session = await fetch("/api/session").then((r) => r.json());
       if (!session.authenticated) { location.href = "/login"; return; }
-      const state = await fetch("/api/controls/state").then((r) => r.json());
-      const map = await fetch("/api/controls/map");
+      let state = {};
+      try { state = await fetch("/api/controls/state").then((r) => r.json()); } catch { state = {}; }
+      state.status = state.status || (await fetch("/api/owner/status").then((r) => r.ok ? r.json() : {}).catch(() => ({})));
+      const map = await fetch("/api/controls/map").catch(() => ({ ok: false }));
       state.exact = map.ok ? await map.json() : null;
-      controlDesk(state, false);
+      try {
+        controlDesk(state, false);
+      } catch (error) {
+        // Never lose the connect buttons because live data is missing.
+        app.innerHTML = `<div class="board controls">${connectionsCard(state)}</div>`;
+        wireOwner();
+      }
       if (state.plug && ["opening_port", "waiting_for_cable", "starting_charge"].includes(state.plug.phase)) watchPlug();
     }
 

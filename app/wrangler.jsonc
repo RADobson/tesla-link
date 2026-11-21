@@ -56,14 +56,14 @@
     {
       "binding": "DB",
       "database_name": "white-lotus",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "079c2a9b-0e23-4a6d-ae46-86f7bb07dc18",
       "migrations_dir": "migrations"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT",
-      "id": "00000000000000000000000000000000"
+      "id": "528dd97a459a49479b79e648f4a47d78"
     }
   ],
   "durable_objects": {

@@ -2,7 +2,7 @@
 
 A Cloudflare Worker for the house at tesla.dobson.website: Sigenergy solar, home battery, and AC charger, plus Richard's Tesla Model 3, White Lotus.
 
-The GitHub Pages files at the repository root are unchanged. They still host the Tesla Fleet API public key and the OAuth landing page. This Worker can serve those same bytes when the hostname moves off GitHub Pages.
+The Worker `white-lotus` is live at https://tesla.dobson.website. The GitHub Pages files at the repository root are unchanged and remain the source for the public key and the static callback page. The Worker serves those same bytes, and it also completes a Tesla sign-in when the callback state belongs to this app.
 
 ## Architecture
 
@@ -11,7 +11,10 @@ browser ──► Worker (app/src/index.ts)
               ├─ /.well-known/.../public-key.pem   exact Pages file
               ├─ /callback                         exact Pages file, no trailing slash
               ├─ /  /login  /controls              dashboard and command centre
-              ├─ D1  white-lotus                   history, passkeys, sessions, audit
+              ├─ /owner/tesla/connect              one-time Tesla connect link
+              ├─ /owner/sigen/connect              one-time Sigen connect link (portal will not return here)
+              ├─ /owner/sigen/import               one-time import of a loopback Sigen grant
+              ├─ D1  white-lotus                   history, passkeys, sessions, audit, owner_links
               ├─ KV  RATE_LIMIT                    login and control rate limits
               ├─ Durable Object TokenVault         refresh tokens, VIN, charger identity, command session
               └─ Durable Object PlugCharge         plug-and-charge listener, alarm every 5s
@@ -39,7 +42,7 @@ Polling never calls `wake_up`. It calls `GET /vehicles/{id}` and, only when `sta
 
 Tesla refresh tokens are single-use. `TokenVault` keeps one in-flight refresh per provider and writes the replacement with a compare-and-swap on a version counter. Two overlapping callers share that refresh. A second writer that lost the swap reads the winner instead of spending the token again.
 
-The app has its own OAuth client flow so its refresh token is not shared with any other client. The registered redirect stays `https://tesla.dobson.website/callback` with no trailing slash. That URL still returns the original landing page, which does not send the code anywhere. The owner pastes the callback URL into the command centre, and the Worker exchanges it. That works from workers.dev before DNS moves, because the token request uses the registered redirect, not the Worker's hostname.
+The app has its own OAuth client flow so its refresh token is not shared with any other client. The registered redirect stays `https://tesla.dobson.website/callback` with no trailing slash. The authorize URL is the confidential-client request this client already accepts: `state`, `nonce`, and `prompt_missing_scopes=true`. It does not send PKCE and it does not send `prompt=login`. When Tesla returns a `code` whose `state` matches a pending owner connect, the Worker exchanges it and then sends the browser to `/controls`. Any other visit to `/callback`, including a code that this app did not start, still gets the original static page, which does not send the code anywhere. The command centre can also paste a callback URL if the automatic return did not run.
 
 ### Sigen
 
@@ -51,12 +54,34 @@ The catalog checked for this build is `0.1.4-31d58862bc860a90`. Write tools are 
 
 `set_ac_charge_mode` uses `pv_surplus` (solar only) or `fast`. It needs the AC charger's serial number, which is read from `get_charger_info` and stored in the token vault. It is never returned by a public API. `set_battery_soc_settings` reads the current settings and changes only `chargeSOC`, formatted like `80.0`.
 
-The public catalog and the portal bundle were fetched while building this. The portal's redirect behaviour is still a hypothesis. The official client posts the result to a loopback URL placed in the fragment (`#redirect_uri=`). The minified portal script does not show an allowlist that would prove an https Worker URL is accepted. The Worker therefore does both:
+Sigen's authorization page only posts the tokens to a loopback `redirect_uri`. It does not accept `https://tesla.dobson.website/sigen/callback`, so Connect Sigen in the browser cannot finish on the Worker. Connect Sigen by signing in with the official client on the owner's machine, into a credential file that is not shared with any other tool, then importing that file through the one-time import link below.
 
-- `POST /sigen/callback` accepts `type=sigen.authorization.success` when `state` matches a pending owner login
-- `POST /api/owner/sigen/import` stores an access token and refresh token the owner pastes, which is the path that does not depend on the portal accepting this host
+`POST /sigen/callback` is still there for a portal response of `type=sigen.authorization.success`, and a signed-in owner can paste tokens at `POST /api/owner/sigen/import`. Neither of those is how this house connects. The working path is the loopback login plus `POST /owner/sigen/import`.
 
 Sigen's refresh may reuse the same refresh token. Tesla's must rotate. Both go through the same lock.
+
+### Owner links
+
+Migration `0002_owner_links.sql` adds `owner_links`. A row stores the SHA-256 hex of a secret, `provider` (`tesla` or `sigen`), and `expires_at`. The raw token is never stored. The first request deletes the row, so the link works once. Links are minted out of band, for about 15 minutes, by inserting that hash. They are not created from the command centre.
+
+A connect link is `GET /owner/tesla/connect?t=<token>` or `GET /owner/sigen/connect?t=<token>`. The stored hash is SHA-256 of the token alone. A valid visit redirects to Tesla's authorize URL, or to Sigen's authorization page. Sigen's page still will not post back to this host. These routes are limited to 10 attempts per 15 minutes per IP.
+
+The Sigen import link is separate so a connect token cannot be reused to upload credentials. Store SHA-256 of the literal prefix `import:` plus the token, with `provider` `sigen`. Then, after the loopback login:
+
+```bash
+SIGEN_CREDENTIAL_FILE="$HOME/.config/sigen-open-platform/white-lotus.json" \
+  node scripts/sigen.mjs login
+```
+
+`scripts/sigen.mjs` is the official client from the Sigen open-platform package. The credential file holds `access_token` and `refresh_token`. Post them to the Worker with the import token. `expiresIn` is seconds; if the file only has an absolute `expires_at`, send the remaining seconds, or omit it and the Worker uses one hour.
+
+```bash
+curl -sS https://tesla.dobson.website/owner/sigen/import \
+  -H 'content-type: application/json' \
+  -d '{"t":"<import-token>","accessToken":"<from the credential file>","refreshToken":"<from the credential file>","expiresIn":3600}'
+```
+
+A success is `{ "connected": true }`. The token row is already gone, and the refresh token is only in the token vault.
 
 ### Solar score
 
@@ -75,6 +100,7 @@ Public responses snap the car to the centre of a 0.2° cell and draw a 20 km rad
 - Every control is appended to `audit_log` with the action and outcome. Tokens, the VIN, and the charger serial are not written there.
 - Public JSON is built by copying named fields. A key scan rejects `vin`, tokens, latitude, longitude, and serial-number names before the response is sent. Query strings are redacted in Workers logs because `/callback` carries an OAuth code.
 - The private key, Tesla client secret, setup code, and home coordinates are Worker secrets. They are not in this repository.
+- Owner connect and Sigen import links are single use. D1 stores only a SHA-256. The import hash is over `import:` plus the token, so opening a connect link does not authorise an upload of Sigen tokens.
 
 `/preview/controls` renders the command centre with sample data and does not call the car. It returns 404 unless `MOCK_INTEGRATIONS` is `true`. Do not deploy the dev override.
 
@@ -91,24 +117,18 @@ Open http://localhost:8787 for the public dashboard and http://localhost:8787/pr
 
 `npm test` covers registration lock and session cookies, refresh-token single flight and compare-and-swap, the plug-and-charge state machine, location fuzzing, the Tesla protocol vectors, and the solar-score and Sigen argument builders.
 
-## Resources to create
+## Live resources
 
-Do this in the Cloudflare account before the first real deploy. The ids below in `wrangler.jsonc` are placeholders so a deploy cannot silently provision them.
+The Worker is already deployed. `wrangler.jsonc` has the live D1 database id and KV namespace id.
 
-| Binding | Kind | Name to create |
+| Binding | Kind | Name |
 | --- | --- | --- |
 | `DB` | D1 | `white-lotus` |
 | `RATE_LIMIT` | KV namespace | `white-lotus-rate-limit` |
 | `TOKEN_VAULT` | Durable Object class `TokenVault` | SQLite-backed, migration tag `v1` |
 | `PLUG_CHARGE` | Durable Object class `PlugCharge` | SQLite-backed, same migration |
 
-```bash
-cd app
-npx wrangler d1 create white-lotus
-npx wrangler kv namespace create white-lotus-rate-limit
-```
-
-Put the printed D1 `database_id` and KV `id` into `app/wrangler.jsonc`. The Durable Object classes do not need a separate id. The `migrations` entry in the config creates the SQLite classes on first deploy. Then apply the schema to the remote database:
+Schema migrations are `0001_init.sql` and `0002_owner_links.sql`. On a new database they are applied with:
 
 ```bash
 npx wrangler d1 migrations apply DB --remote
@@ -130,39 +150,13 @@ Non-secret vars are already in `wrangler.jsonc`: Tesla and Sigen URLs, the stati
 
 ## Deploy
 
-### 1. workers.dev
+`npx wrangler deploy` from `app/` publishes Worker `white-lotus`. It is already serving https://tesla.dobson.website. dobson.website was at Namecheap (`registrar-servers.com`), with `tesla` CNAME'd to `radobson.github.io`. That hostname is now the Worker. The Worker still answers `/.well-known/appspecific/com.tesla.3p.public-key.pem` with the same bytes. `/callback` with no app state is still the original page and a 200, with no slash added. A Tesla return whose `state` this app created is exchanged and then sent on to `/controls`.
 
-From `app/`, after the ids and secrets above exist:
-
-```bash
-npx wrangler deploy
-```
-
-Wrangler prints `https://white-lotus.<account>.workers.dev`. Mocks are off. The public dashboard is empty until the cron has stored samples and Sigen is connected. Tesla sign-in still redirects to `https://tesla.dobson.website/callback` on GitHub Pages. Paste that callback URL into the workers.dev command centre. The token exchange uses the registered redirect, so this works before DNS changes.
-
-The workers.dev hostname is not the passkey relying party in the committed config (`RP_ID` is `tesla.dobson.website`). Create the passkey after the custom domain is live, or temporarily set `RP_ID` and `APP_ORIGIN` to the workers.dev host for a trial and then register again on the real domain.
-
-### 2. tesla.dobson.website
-
-DNS for dobson.website is at Namecheap (`registrar-servers.com`). `tesla` is a CNAME to `radobson.github.io`, which is what serves the public key and `/callback` today.
-
-A Worker custom domain needs the zone on the same Cloudflare account. The practical order:
-
-1. Add `dobson.website` to Cloudflare and, at Namecheap, point the domain's nameservers at the two Cloudflare nameservers. Keep the existing records, including the `tesla` CNAME, until the Worker is ready.
-2. In `app/wrangler.jsonc`, add a route only when you are ready to cut over:
-
-   ```jsonc
-   "routes": [{ "pattern": "tesla.dobson.website", "custom_domain": true }]
-   ```
-
-3. `npx wrangler deploy`. Cloudflare will serve `tesla.dobson.website` from the Worker. Remove or stop using the GitHub Pages CNAME at that point. The Worker answers `/.well-known/appspecific/com.tesla.3p.public-key.pem` with the same bytes, and `/callback` with the same HTML and a 200 (no redirect that would add a slash).
-4. Register the passkey on `https://tesla.dobson.website/login`, then connect Tesla and Sigen from the command centre.
-
-Until that cutover, leave the CNAME pointed at GitHub Pages. The public key must stay where Tesla fetches it.
+`RP_ID` is `tesla.dobson.website`. Passkeys belong on that host. Connect Tesla from the command centre, or with a one-time `/owner/tesla/connect` link. Connect Sigen with the loopback `sigen.mjs` login and `/owner/sigen/import`, not with the in-browser redirect.
 
 ## Pages files
 
-These stay at the repository root and are what GitHub Pages serves now:
+These stay at the repository root. They are the bytes the Worker serves for the public key and for a callback this app did not start:
 
 - `.well-known/appspecific/com.tesla.3p.public-key.pem`
 - `callback/index.html` at `https://tesla.dobson.website/callback`
