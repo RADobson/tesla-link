@@ -8,17 +8,17 @@
   <style>__FONT_CSS__</style>
   <style>
     :root {
-      --wash: #0b100e;
+      --wash: #090e0c;
       --pond: #121916;
-      --sheet: rgba(232, 226, 214, 0.045);
-      --ink: #e7efe8;
-      --muted: #a7b4ab;
-      --line: rgba(212, 184, 140, 0.28);
-      --gold: #e4d2b0;
+      --sheet: rgba(236, 230, 216, 0.055);
+      --ink: #f3f6f1;
+      --muted: #b7c2b8;
+      --line: rgba(212, 184, 140, 0.32);
+      --gold: #f0e2c4;
       --gold-deep: #c4a46a;
       --jade: #8fbfa8;
       --water: #7ea8b0;
-      --blossom: #e7b7b0;
+      --blossom: #f0c9c2;
       --danger: #e0a090;
       color-scheme: dark;
     }
@@ -31,17 +31,76 @@
       font-family: "Lotus Sans", "Avenir Next", system-ui, sans-serif;
       font-weight: 400;
       background:
-        radial-gradient(900px 480px at 80% -10%, rgba(212, 180, 131, 0.14), transparent 55%),
-        radial-gradient(700px 500px at -10% 20%, rgba(80, 120, 110, 0.18), transparent 50%),
+        radial-gradient(1100px 560px at 82% -12%, rgba(228, 196, 140, 0.2), transparent 56%),
+        radial-gradient(820px 620px at -8% 18%, rgba(64, 104, 96, 0.28), transparent 54%),
+        radial-gradient(900px 520px at 50% 120%, rgba(16, 36, 42, 0.55), transparent 60%),
         var(--wash);
     }
-    body::before {
-      content: "";
-      pointer-events: none;
+    .atmosphere { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .grain, .fibers {
+      position: absolute;
+      inset: -2%;
+    }
+    .grain {
+      opacity: 0.55;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='matrix' values='1 0 0 0 0.25  0 1 0 0 0.2  0 0 1 0 0.12  0 0 0 0.7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+    .fibers {
+      opacity: 0.28;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='f'><feTurbulence type='turbulence' baseFrequency='0.02 0.25' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='1 0 0 0 0.4  0 1 0 0 0.32  0 0 1 0 0.2  0 0 0 0.45 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+    }
+    .ripples { position: absolute; right: -30px; bottom: 6%; width: 340px; height: 150px; }
+    .ripples i {
+      position: absolute;
+      inset: 10%;
+      border: 1px solid rgba(228, 210, 176, 0.28);
+      border-radius: 50%;
+      animation: pond 9s ease-in-out infinite;
+    }
+    .ripples i:nth-child(2) { inset: 0; animation-delay: 1.6s; }
+    .ripples i:nth-child(3) { inset: 22%; animation-delay: 3.1s; }
+    .petal { position: absolute; width: 28px; height: 42px; opacity: 0.7; animation: drift-petal 22s ease-in-out infinite; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.25)); }
+    .petal.p1 { top: 14%; left: 12%; animation-duration: 24s; }
+    .petal.p2 { top: 28%; left: 78%; width: 22px; animation-duration: 19s; animation-delay: -6s; }
+    .petal.p3 { top: 62%; left: 8%; animation-duration: 27s; animation-delay: -11s; }
+    .petal.p4 { top: 74%; left: 86%; width: 18px; animation-duration: 21s; animation-delay: -3s; }
+    .petal.p5 { top: 46%; left: 46%; width: 16px; opacity: 0.35; animation-duration: 30s; animation-delay: -14s; }
+    @keyframes drift-petal {
+      0% { transform: translate3d(0, 0, 0) rotate(-8deg); }
+      50% { transform: translate3d(16px, 28px, 0) rotate(14deg); }
+      100% { transform: translate3d(-10px, 64px, 0) rotate(-4deg); }
+    }
+    @keyframes pond {
+      0%, 100% { transform: scale(0.86); opacity: 0.2; }
+      50% { transform: scale(1.12); opacity: 0.55; }
+    }
+    .rail {
+      display: none;
       position: fixed;
-      inset: 0;
-      opacity: 0.18;
-      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+      z-index: 2;
+      top: 0;
+      bottom: 0;
+      left: 28px;
+      width: 28px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      pointer-events: none;
+    }
+    .rail span {
+      font-family: "Lotus Seal", "Lotus Serif", serif;
+      font-size: 1.55rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .rail b {
+      display: block;
+      width: 1px;
+      height: 88px;
+      background: linear-gradient(var(--gold-deep), transparent);
     }
     a { color: inherit; }
     :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
@@ -55,58 +114,106 @@
       z-index: 5;
     }
     .skip:focus { top: 12px; }
-    header, main { position: relative; width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
-    header { display: flex; align-items: flex-end; justify-content: space-between; padding: 36px 0 8px; gap: 16px; }
-    .brand { display: flex; gap: 14px; align-items: center; text-decoration: none; }
-    .brand svg { width: 42px; height: 42px; }
-    .brand strong { display: block; font-family: "Lotus Serif", Georgia, serif; font-weight: 500; font-size: 1.7rem; letter-spacing: 0.01em; }
-    .brand span, .kicker { color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.72rem; }
-    nav a { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; padding-bottom: 2px; }
+    header, main { position: relative; z-index: 1; width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+    header { display: flex; align-items: flex-end; justify-content: space-between; padding: 42px 0 6px; gap: 18px; }
+    .brand { display: flex; gap: 16px; align-items: center; text-decoration: none; }
+    .brand svg.mark { width: 46px; height: 46px; flex: none; }
+    .brand strong { display: block; font-family: "Lotus Serif", Georgia, serif; font-weight: 500; font-size: 2rem; letter-spacing: -0.02em; line-height: 0.95; }
+    .brand .eyebrow, .kicker {
+      color: var(--gold);
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+    }
+    .stamp {
+      font-family: "Lotus Seal", "Lotus Serif", serif;
+      writing-mode: vertical-rl;
+      color: var(--gold);
+      font-size: 0.95rem;
+      letter-spacing: 0.28em;
+      line-height: 1;
+      padding: 4px 0 4px 10px;
+      border-left: 1px solid rgba(228, 210, 176, 0.45);
+    }
+    nav a { color: var(--muted); text-decoration: none; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.72rem; border-bottom: 1px solid transparent; padding-bottom: 3px; }
     nav a:hover { color: var(--gold); border-color: var(--gold-deep); }
-    .board { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding: 18px 0 80px; }
+    .board { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; padding: 22px 0 96px; }
     .span2 { grid-column: span 2; }
     .card, .sheet {
-      background: var(--sheet);
+      position: relative;
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(255, 248, 236, 0.07), transparent 46%),
+        linear-gradient(180deg, rgba(236, 230, 216, 0.07), rgba(8, 12, 10, 0.18));
       border: 1px solid var(--line);
-      border-radius: 28px;
-      padding: 26px 26px 22px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      border-radius: 30px;
+      padding: 30px 30px 26px;
+      box-shadow:
+        0 30px 60px -36px rgba(0, 0, 0, 0.85),
+        inset 0 1px 0 rgba(255, 248, 236, 0.08),
+        inset 0 0 70px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
     }
-    h1, h2, .num {
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(240, 226, 196, 0.75), transparent);
+      pointer-events: none;
+    }
+    h1, h2, .num, .exact {
       font-family: "Lotus Serif", Georgia, serif;
       font-weight: 500;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
     }
-    h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); line-height: 0.95; margin: 8px 0 0; }
-    h2 { font-size: 1.7rem; margin: 6px 0 8px; }
-    .num { font-size: clamp(3.2rem, 7vw, 5.4rem); line-height: 0.9; margin: 8px 0 0; }
-    .num em { font-style: italic; color: var(--gold); font-size: 0.42em; margin-left: 8px; }
-    p { line-height: 1.55; }
+    h1 { font-size: clamp(3rem, 6.4vw, 5rem); line-height: 0.9; margin: 0; }
+    h1 em { font-style: italic; color: var(--gold); font-weight: 500; }
+    h2 { font-size: 2rem; line-height: 1.05; margin: 0 0 16px; }
+    .lede { max-width: 38rem; margin: 16px 0 0; color: var(--muted); font-size: 1.05rem; }
+    .num { font-size: clamp(4.2rem, 8vw, 6.4rem); line-height: 0.86; margin: 18px 0 0; }
+    .num em { font-style: italic; color: var(--gold); font-size: 0.34em; margin-left: 10px; letter-spacing: 0; }
+    p { line-height: 1.6; }
     .muted { color: var(--muted); }
-    .figure-row, .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
-    .figure { border-top: 1px solid var(--line); padding-top: 10px; }
-    .figure b { display: block; font-family: "Lotus Serif", Georgia, serif; font-size: 1.65rem; font-weight: 500; }
-    .figure span { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .kicker { margin: 0 0 12px; }
+    .figure-row, .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 28px; }
+    .figure { border-top: 1px solid var(--line); padding-top: 12px; }
+    .figure b { display: block; font-family: "Lotus Serif", Georgia, serif; font-size: 1.85rem; font-weight: 500; letter-spacing: -0.03em; }
+    .figure span { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(180px, 280px); gap: 8px 12px; align-items: end; }
+    .hero-wash { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .hero-copy, .hero-lotus { position: relative; z-index: 1; }
+    .hero-lotus { width: min(100%, 280px); margin-left: auto; }
     svg.viz { width: 100%; height: auto; display: block; }
-    .flow path.stream { fill: none; stroke-linecap: round; stroke-dasharray: 7 11; animation: drift 4.5s linear infinite; }
-    @keyframes drift { to { stroke-dashoffset: -72; } }
-    @keyframes ripple { from { transform: scale(0.86); opacity: 0.55; } to { transform: scale(1.08); opacity: 0.15; } }
-    .ripples ellipse { transform-origin: center; animation: ripple 5.5s ease-in-out infinite; }
-    .ripples ellipse:nth-child(2) { animation-delay: 1.2s; }
-    .ripples ellipse:nth-child(3) { animation-delay: 2.4s; }
-    .heat { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 14px; }
+    svg.flow path { fill: none; }
+    svg.flow path.stream { stroke-linecap: round; animation: drift 7s linear infinite; }
+    @keyframes drift { to { stroke-dashoffset: -114; } }
+    .lotus-wrap { max-width: 280px; margin: 4px auto 0; }
+    .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
+    .dow { text-align: center; color: var(--muted); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; }
     .cell {
       aspect-ratio: 1;
       border-radius: 10px;
-      background: color-mix(in srgb, var(--jade) calc(var(--self, 0) * 100%), #1a2420);
-      border: 1px solid rgba(232, 226, 214, 0.08);
+      display: grid;
+      place-items: center;
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--cell, #f3f6f1);
+      background: color-mix(in srgb, #9dcfb6 calc(var(--self, 0) * 100%), #17211d);
+      box-shadow: inset 0 0 0 1px rgba(255, 248, 236, 0.06);
     }
-    .cell span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-    .session { display: grid; grid-template-columns: 7.5rem 1fr auto; gap: 10px; align-items: center; margin: 10px 0; font-size: 0.85rem; }
-    .track { height: 8px; border-radius: 99px; background: #24302b; overflow: hidden; display: flex; }
+    .cell.empty { background: transparent; box-shadow: none; }
+    .legend { display: flex; align-items: center; gap: 6px; margin-top: 14px; color: var(--muted); font-size: 0.75rem; }
+    .legend i { width: 14px; height: 14px; border-radius: 4px; display: block; background: color-mix(in srgb, #9dcfb6 calc(var(--self, 0) * 100%), #17211d); }
+    .session { display: grid; grid-template-columns: 7.2rem 1fr auto; gap: 12px; align-items: center; margin: 12px 0; font-size: 0.88rem; }
+    .track { height: 10px; border-radius: 99px; background: rgba(255,255,255,0.05); overflow: hidden; display: flex; box-shadow: inset 0 0 0 1px rgba(228,210,176,0.12); }
     .track i { display: block; height: 100%; }
-    .track .sun { background: var(--gold-deep); }
-    .track .grid { background: var(--water); }
+    .track .sun { background: linear-gradient(90deg, #f0e2c4, #c4a46a); }
+    .track .grid { background: linear-gradient(90deg, #9ec4c8, #6f95a4); }
+    .desk-title { padding: 6px 8px 0; }
+    .desk-title h1 { font-size: clamp(2.4rem, 4vw, 3.4rem); }
+    .login-lotus { width: min(168px, 46%); margin: 0 auto 8px; }
     button, summary { font: inherit; color: var(--ink); }
     button, .btn {
       min-height: 44px;
@@ -140,13 +247,31 @@
     .login { width: min(440px, 100%); }
     .login h1 { font-size: 2.6rem; }
     details summary { cursor: pointer; color: var(--muted); margin-top: 12px; }
+    @media (min-width: 1240px) {
+      .rail { display: flex; }
+      header, main { width: min(1120px, calc(100% - 140px)); }
+    }
     @media (max-width: 800px) {
-      header, main { width: min(100% - 28px, 1080px); }
-      header { flex-direction: column; align-items: flex-start; }
-      .board { grid-template-columns: 1fr; }
+      header, main { width: min(100% - 36px, 1120px); }
+      header { flex-direction: column; align-items: flex-start; padding: 28px 0 4px; gap: 14px; }
+      .brand strong { font-size: 1.65rem; }
+      .stamp { font-size: 0.85rem; }
+      .board { grid-template-columns: 1fr; gap: 16px; padding: 16px 0 72px; }
       .span2 { grid-column: auto; }
-      .figure-row, .stats { grid-template-columns: 1fr 1fr; }
-      .session { grid-template-columns: 1fr; }
+      .card { padding: 22px 18px 18px; border-radius: 24px; }
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-lotus { width: min(210px, 68%); margin: 0 auto 4px; order: -1; }
+      h1 { font-size: 2.55rem; }
+      h2 { font-size: 1.65rem; margin-bottom: 12px; }
+      .lede { font-size: 0.98rem; margin-top: 12px; }
+      .num { font-size: 3.35rem; margin-top: 12px; }
+      .figure-row, .stats { grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-top: 20px; }
+      .figure b { font-size: 1.45rem; }
+      .cal { gap: 5px; }
+      .cell { font-size: 0.62rem; border-radius: 7px; }
+      .session { grid-template-columns: 5.4rem minmax(0, 1fr) auto; gap: 8px; }
+      .ripples { display: none; }
+      .petal.p3, .petal.p5 { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -156,15 +281,32 @@
 </head>
 <body data-page="__PAGE__">
   <a class="skip" href="#app">Skip to content</a>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="grain"></div>
+    <div class="fibers"></div>
+    <div class="ripples"><i></i><i></i><i></i></div>
+    <svg class="petal p1" viewBox="0 0 48 72"><path d="M24 70 C 8 48, 6 22, 24 2 C 42 22, 40 48, 24 70 Z" fill="#f0c9c2"/></svg>
+    <svg class="petal p2" viewBox="0 0 48 72"><path d="M24 70 C 10 46, 8 20, 24 4 C 40 20, 38 46, 24 70 Z" fill="#f7f1e4"/></svg>
+    <svg class="petal p3" viewBox="0 0 48 72"><path d="M24 68 C 12 46, 10 24, 24 6 C 38 24, 36 46, 24 68 Z" fill="#e7b7b0"/></svg>
+    <svg class="petal p4" viewBox="0 0 48 72"><path d="M24 70 C 9 48, 8 22, 24 3 C 40 22, 39 48, 24 70 Z" fill="#f3e6c8"/></svg>
+    <svg class="petal p5" viewBox="0 0 48 72"><path d="M24 66 C 14 46, 12 26, 24 8 C 36 26, 34 46, 24 66 Z" fill="#f7f1e4"/></svg>
+  </div>
+  <aside class="rail" aria-hidden="true"><span>白</span><b></b><span>蓮</span></aside>
   <header>
     <a class="brand" href="/">
-      <svg viewBox="0 0 64 64" aria-hidden="true">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
         <circle cx="32" cy="32" r="30" fill="none" stroke="#c4a46a" stroke-width="1"/>
-        <path d="M32 14c6 8 6 13 0 18-6-5-6-10 0-18z" fill="none" stroke="#e7efe8" stroke-width="1.2"/>
-        <path d="M32 32c8 3 13 7 14 13-9-1-12-5-14-13z" fill="none" stroke="#8fbfa8" stroke-width="1.2"/>
-        <path d="M32 32c-8 3-13 7-14 13 9-1 12-5 14-13z" fill="none" stroke="#8fbfa8" stroke-width="1.2"/>
+        <path d="M32 12c7 9 8 16 0 22-8-6-7-13 0-22z" fill="url(#markGold)" stroke="#f0e2c4" stroke-width="0.6"/>
+        <path d="M32 30c10 4 16 10 16 16-10-2-14-7-16-16z" fill="#8fbfa8" opacity="0.85"/>
+        <path d="M32 30c-10 4-16 10-16 16 10-2 14-7 16-16z" fill="#6ea48c"/>
+        <defs>
+          <linearGradient id="markGold" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#a8843e"/><stop offset="0.5" stop-color="#f3e6c8"/><stop offset="1" stop-color="#c4a46a"/>
+          </linearGradient>
+        </defs>
       </svg>
-      <div><span>Moonlit pond</span><strong>White Lotus</strong></div>
+      <div><span class="eyebrow">Moonlit pond</span><strong>White Lotus</strong></div>
+      <span class="stamp">白蓮</span>
     </a>
     <nav id="nav"></nav>
   </header>
@@ -209,107 +351,261 @@
       });
     }
 
-    function stroke(watts) { return (0.7 + Math.min(6.5, Math.abs(Number(watts) || 0) / 1000 * 1.5)).toFixed(2); }
+    const PETAL = "M0,12 C-18,2 -24,-36 -8,-78 C-2,-90 2,-90 8,-78 C24,-36 18,2 0,12 Z";
+
+    function cubic(p0, p1, p2, p3, t) {
+      const u = 1 - t;
+      return [
+        u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+        u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+      ];
+    }
+
+    function brush(x1, y1, x2, y2, bow, watts, color) {
+      const c1 = [x1 + (x2 - x1) * 0.34, y1 + bow];
+      const c2 = [x1 + (x2 - x1) * 0.66, y2 + bow * 0.35];
+      const p0 = [x1, y1];
+      const p3 = [x2, y2];
+      const width = 0.7 + Math.min(8.5, Math.abs(Number(watts) || 0) / 1000 * 1.25);
+      const steps = 28;
+      let body = "";
+      for (let i = 0; i < steps; i++) {
+        const t0 = i / steps;
+        const t1 = (i + 1) / steps;
+        const a = cubic(p0, c1, c2, p3, t0);
+        const b = cubic(p0, c1, c2, p3, t1);
+        const taper = Math.sin(Math.PI * ((t0 + t1) / 2)) ** 0.8;
+        const w = (0.35 + width * taper).toFixed(2);
+        body += `<path fill="none" stroke="${color}" stroke-linecap="round" stroke-width="${w}" opacity="${(0.22 + 0.78 * taper).toFixed(2)}" d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${b[0].toFixed(1)} ${b[1].toFixed(1)}"/>`;
+      }
+      const d = `M${x1} ${y1} C ${c1[0].toFixed(1)} ${c1[1].toFixed(1)}, ${c2[0].toFixed(1)} ${c2[1].toFixed(1)}, ${x2} ${y2}`;
+      const glow = `<path fill="none" stroke="${color}" stroke-width="${(width * 0.55 + 3.2).toFixed(2)}" stroke-linecap="round" opacity="0.38" filter="url(#flowGlow)" d="${d}"/>`;
+      const stream = `<path class="stream" fill="none" stroke="${color}" stroke-width="1.15" stroke-linecap="round" stroke-dasharray="2 18" opacity="0.9" d="${d}"/>`;
+      return glow + body + stream;
+    }
 
     function flowSvg(energy, vehicle) {
       const e = energy || {};
-      const carW = e.chargerW || (vehicle && vehicle.chargingState === "Charging" ? 3000 : 200);
+      const carW = e.chargerW || (vehicle && vehicle.chargingState === "Charging" ? 3000 : 180);
       const nodes = [
-        ["Sun", kw(e.solarW), 70, 54],
-        ["House", kw(e.homeW), 250, 54],
-        ["Car", vehicle && vehicle.batteryPercent != null ? Math.round(vehicle.batteryPercent) + "%" : "—", 430, 54],
-        ["Battery", e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%", 160, 176],
-        ["Grid", kw(Math.abs(e.gridW || 0)), 340, 176],
+        ["Sun", kw(e.solarW), 78, 72],
+        ["House", kw(e.homeW), 286, 78],
+        ["Car", vehicle && vehicle.batteryPercent != null ? Math.round(vehicle.batteryPercent) + "%" : "—", 492, 70],
+        ["Battery", e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%", 176, 196],
+        ["Grid", kw(Math.abs(e.gridW || 0)), 392, 198],
       ];
-      const links = [
-        [70, 54, 250, 54, e.solarW, "#e4d2b0"],
-        [250, 78, 160, 160, Math.abs(e.batteryW || 0), "#8fbfa8"],
-        [250, 78, 340, 160, Math.abs(e.gridW || 0), "#7ea8b0"],
-        [280, 54, 400, 54, carW, "#e7b7b0"],
-      ];
-      const paths = links.map(([x1, y1, x2, y2, watts, color], index) => {
-        const bow = index % 2 === 0 ? -36 : 36;
-        const c1x = x1 + (x2 - x1) * 0.35;
-        const c2x = x1 + (x2 - x1) * 0.65;
-        return `<path class="stream" d="M${x1} ${y1} C ${c1x} ${y1 + bow}, ${c2x} ${y2 + bow}, ${x2} ${y2}" stroke="${color}" stroke-width="${stroke(watts)}" />`;
-      }).join("");
+      const strokes = [
+        brush(78, 72, 286, 78, -48, e.solarW, "#f0e2c4"),
+        brush(286, 96, 176, 178, 36, Math.abs(e.batteryW || 0), "#8fbfa8"),
+        brush(286, 96, 392, 180, -28, Math.abs(e.gridW || 0), "#8eb8c0"),
+        brush(310, 70, 468, 70, -34, carW, "#f0c9c2"),
+      ].join("");
       const labels = nodes.map(([name, value, x, y]) =>
-        `<g><circle cx="${x}" cy="${y}" r="22" fill="#121916" stroke="#c4a46a" stroke-width="0.8"/><text x="${x}" y="${y + 4}" text-anchor="middle" fill="#e7efe8" font-size="11" font-family="Lotus Serif, Georgia, serif">${esc(value)}</text><text x="${x}" y="${y + 38}" text-anchor="middle" fill="#a7b4ab" font-size="10" font-family="Lotus Sans, sans-serif">${esc(name)}</text></g>`
+        `<g>
+          <circle cx="${x}" cy="${y}" r="34" fill="#101614" stroke="#c4a46a" stroke-width="1"/>
+          <circle cx="${x}" cy="${y}" r="27" fill="none" stroke="rgba(240,226,196,0.28)" stroke-width="0.6"/>
+          <text x="${x}" y="${y - 1}" text-anchor="middle" fill="#f3f6f1" font-size="13" font-family="Lotus Serif, Georgia, serif">${esc(value)}</text>
+          <text x="${x}" y="${y + 14}" text-anchor="middle" fill="#c4a46a" font-size="8" letter-spacing="0.16em" font-family="Lotus Sans, sans-serif">${esc(name).toUpperCase()}</text>
+        </g>`
       ).join("");
-      return `<svg class="viz" viewBox="0 0 500 230" role="img" aria-label="Energy flowing between the sun, house, battery, grid and car">
-        ${paths}${labels}
+      return `<svg class="viz flow" fill="none" viewBox="0 0 570 250" role="img" aria-label="Energy flowing between the sun, house, battery, grid and car">
+        <defs>
+          <filter id="flowGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3.2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        ${strokes}${labels}
       </svg>`;
+    }
+
+    function petalGroup(open, outer, inner) {
+      const sx = 0.32 + open * 0.62;
+      const sy = 0.62 + open * 0.4;
+      const lift = 6 + open * 18;
+      let out = "";
+      for (let i = 0; i < 8; i++) {
+        out += `<path d="${PETAL}" fill="${outer}" transform="rotate(${i * 45}) translate(0 ${(-lift).toFixed(1)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)})"/>`;
+      }
+      for (let i = 0; i < 8; i++) {
+        out += `<path d="${PETAL}" fill="${inner}" transform="rotate(${i * 45 + 22}) translate(0 ${(-(lift * 0.45)).toFixed(1)}) scale(${(sx * 0.62).toFixed(3)} ${(sy * 0.72).toFixed(3)})"/>`;
+      }
+      for (let i = 0; i < 5; i++) {
+        out += `<path d="${PETAL}" fill="#fffaf8" opacity="0.92" transform="rotate(${i * 72 + 8}) translate(0 ${(-(lift * 0.15)).toFixed(1)}) scale(${(sx * 0.38).toFixed(3)} ${(sy * 0.5).toFixed(3)})"/>`;
+      }
+      return out;
     }
 
     function lotusSvg(soc) {
-      const open = soc == null ? 0.35 : 0.3 + (Number(soc) / 100) * 0.7;
-      let petals = "";
-      for (let i = 0; i < 8; i++) {
-        petals += `<ellipse cx="90" cy="62" rx="${16 * open}" ry="${36 * open}" transform="rotate(${i * 45} 90 96)" fill="none" stroke="${i % 2 ? "#8fbfa8" : "#e4d2b0"}" stroke-width="1.15"/>`;
-      }
+      const open = soc == null ? 0.42 : 0.18 + (Number(soc) / 100) * 0.82;
       const label = soc == null ? "No reading" : Math.round(soc) + " percent";
-      return `<svg class="viz" viewBox="0 0 180 190" role="img" aria-label="Home battery, drawn as a lotus ${esc(label)} open">
-        ${petals}
-        <circle cx="90" cy="96" r="${10 + open * 8}" fill="none" stroke="#e7efe8" stroke-width="1"/>
-        <text x="90" y="168" text-anchor="middle" fill="#e4d2b0" font-family="Lotus Serif, Georgia, serif" font-size="22">${soc == null ? "—" : Math.round(soc) + "%"}</text>
+      return `<svg class="viz" viewBox="0 0 220 250" role="img" aria-label="Home battery, drawn as a lotus ${esc(label)} open">
+        <defs>
+          <linearGradient id="socOuter" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#d97878"/><stop offset="42%" stop-color="#f3c3bc"/><stop offset="100%" stop-color="#fffdfb"/>
+          </linearGradient>
+          <linearGradient id="socInner" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#f0b8b0"/><stop offset="100%" stop-color="#ffffff"/>
+          </linearGradient>
+          <radialGradient id="socPad" cx="50%" cy="42%" r="60%">
+            <stop offset="0%" stop-color="#d7efe2"/><stop offset="62%" stop-color="#6ea48c"/><stop offset="100%" stop-color="#2a463c"/>
+          </radialGradient>
+        </defs>
+        <g transform="translate(110 128)">
+          <ellipse cx="0" cy="28" rx="84" ry="24" fill="url(#socPad)"/>
+          <path d="M18 14 L46 30 L16 36 Z" fill="#10211b" opacity="0.45"/>
+          <ellipse cx="18" cy="20" rx="22" ry="6" fill="rgba(255,255,255,0.18)"/>
+          ${petalGroup(open, "url(#socOuter)", "url(#socInner)")}
+          <circle r="${(5 + open * 3).toFixed(1)}" fill="#f6e7b0"/>
+          <circle r="2.2" fill="#c4a46a"/>
+        </g>
+        <text x="110" y="232" text-anchor="middle" fill="#f0e2c4" font-family="Lotus Serif, Georgia, serif" font-size="28">${soc == null ? "—" : Math.round(soc) + "%"}</text>
       </svg>`;
     }
 
+    function sealLotus() {
+      return `<svg class="viz" viewBox="0 0 220 230" aria-hidden="true">
+        <defs>
+          <linearGradient id="leafGold" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#8d6a32"/><stop offset="42%" stop-color="#f6e7c4"/><stop offset="100%" stop-color="#c4a46a"/>
+          </linearGradient>
+          <linearGradient id="leafPale" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#e7d3a4"/><stop offset="100%" stop-color="#fffaf1"/>
+          </linearGradient>
+          <radialGradient id="leafPad" cx="50%" cy="40%" r="65%">
+            <stop offset="0%" stop-color="#d5ecdf"/><stop offset="70%" stop-color="#5d8d78"/><stop offset="100%" stop-color="#1e3830"/>
+          </radialGradient>
+          <filter id="leafGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.4"/>
+          </filter>
+        </defs>
+        <g transform="translate(110 118)">
+          <ellipse cx="0" cy="34" rx="78" ry="16" fill="rgba(0,0,0,0.28)"/>
+          <ellipse cx="0" cy="26" rx="86" ry="24" fill="url(#leafPad)"/>
+          <path d="M16 12 L42 28 L14 34 Z" fill="#143028" opacity="0.4"/>
+          <g opacity="0.55" filter="url(#leafGlow)">${petalGroup(1, "#e4c98a", "#f6e7c4")}</g>
+          ${petalGroup(1, "url(#leafGold)", "url(#leafPale)")}
+          <circle r="7" fill="#fff6df"/>
+          <circle r="3" fill="#c4a46a"/>
+        </g>
+      </svg>`;
+    }
+
+    function clockIn(ts, timeZone) {
+      const parts = new Intl.DateTimeFormat("en-US", { timeZone: timeZone || "Australia/Sydney", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ts));
+      let hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
+      const minute = Number(parts.find((part) => part.type === "minute")?.value || 0);
+      if (hour === 24) hour = 0;
+      return hour + minute / 60;
+    }
+
     function sunSvg(history, timeZone) {
-      const byHour = {};
+      const samples = [];
       for (const point of history || []) {
-        const hour = hourIn(point.ts, timeZone);
-        byHour[hour] = Math.max(byHour[hour] || 0, point.solarW || 0);
+        const hour = clockIn(point.ts, timeZone);
+        if (hour >= 5.5 && hour <= 19.2) samples.push({ hour, watts: point.solarW || 0 });
       }
-      const max = Math.max(400, ...Object.values(byHour), 0);
-      const cx = 180, cy = 168, r = 130;
-      let marks = "";
-      for (let hour = 6; hour <= 18; hour++) {
-        const t = (hour - 6) / 12;
-        const angle = Math.PI * (1 - t);
-        const solar = byHour[hour] || 0;
-        const len = 8 + (solar / max) * 36;
-        const x1 = cx + (r - len) * Math.cos(angle);
-        const y1 = cy - (r - len) * Math.sin(angle);
-        const x2 = cx + r * Math.cos(angle);
-        const y2 = cy - r * Math.sin(angle);
-        marks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#e4d2b0" stroke-width="${solar > 0 ? 2.2 : 0.6}" stroke-linecap="round"/>`;
+      samples.sort((a, b) => a.hour - b.hour);
+      const max = Math.max(600, ...samples.map((sample) => sample.watts), 0);
+      const left = 48;
+      const right = 392;
+      const base = 168;
+      const cx = (left + right) / 2;
+      const radius = (right - left) / 2;
+      const xOf = (hour) => left + ((hour - 6) / 12) * (right - left);
+      const yOf = (watts) => base - (Math.max(0, watts) / max) * (radius * 0.58);
+      const curve = samples.filter((sample) => sample.hour >= 6 && sample.hour <= 18).map((sample) => [xOf(sample.hour), yOf(sample.watts)]);
+      if (curve.length < 2) {
+        curve.push([xOf(6), base], [xOf(12), base - 8], [xOf(18), base]);
       }
-      const nowHour = hourIn(Date.now(), timeZone);
-      const sunT = Math.min(1, Math.max(0, (nowHour - 6) / 12));
-      const sunA = Math.PI * (1 - sunT);
-      const sx = cx + (r + 16) * Math.cos(sunA);
-      const sy = cy - (r + 16) * Math.sin(sunA);
-      return `<svg class="viz" viewBox="0 0 360 200" role="img" aria-label="Today's solar curve along the sun's arc">
-        <path d="M${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}" fill="none" stroke="rgba(212,180,131,0.35)" stroke-width="1"/>
-        ${marks}
-        <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="7" fill="#e4d2b0"/>
-        <text x="40" y="188" fill="#a7b4ab" font-size="11" font-family="Lotus Sans, sans-serif">dawn</text>
-        <text x="286" y="188" fill="#a7b4ab" font-size="11" font-family="Lotus Sans, sans-serif">dusk</text>
+      const line = curve.map((point, index) => `${index ? "L" : "M"}${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(" ");
+      const area = `M${curve[0][0].toFixed(1)} ${base} ` + curve.map((point) => `L${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(" ") + ` L${curve[curve.length - 1][0].toFixed(1)} ${base} Z`;
+      const cy = base;
+      const now = Math.min(1, Math.max(0, (clockIn(Date.now(), timeZone) - 6) / 12));
+      const angle = Math.PI * (1 - now);
+      const sx = cx + radius * Math.cos(angle);
+      const sy = cy - radius * Math.sin(angle);
+      const dropX = xOf(6 + now * 12);
+      return `<svg class="viz" viewBox="0 0 440 210" role="img" aria-label="Today's solar curve filled under the sun's arc">
+        <defs>
+          <linearGradient id="solarFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f0e2c4" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#c4a46a" stop-opacity="0.05"/>
+          </linearGradient>
+          <filter id="sunGlow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="4"/>
+          </filter>
+        </defs>
+        <path d="M${left} ${cy} A ${radius} ${radius} 0 0 1 ${right} ${cy}" fill="none" stroke="rgba(240,226,196,0.55)" stroke-width="1.4"/>
+        <path d="${area}" fill="url(#solarFill)" stroke="none"/>
+        <path d="${line}" fill="none" stroke="#f6e7c4" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="${left}" y1="${base}" x2="${right}" y2="${base}" stroke="rgba(240,226,196,0.28)" stroke-width="1"/>
+        <line x1="${dropX.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${dropX.toFixed(1)}" y2="${base}" stroke="rgba(240,226,196,0.35)" stroke-dasharray="2 4"/>
+        <g filter="url(#sunGlow)"><circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="16" fill="#f0e2c4" opacity="0.55"/></g>
+        <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="8" fill="#fff6df"/>
+        <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="3.2" fill="#fff"/>
+        <text x="36" y="198" fill="#b7c2b8" font-size="11" letter-spacing="0.16em" font-family="Lotus Sans, sans-serif">DAWN</text>
+        <text x="368" y="198" fill="#b7c2b8" font-size="11" letter-spacing="0.16em" font-family="Lotus Sans, sans-serif">DUSK</text>
       </svg>`;
     }
 
     function gardenSvg(score) {
       const km = Number(score?.kmDriven || 0);
       const share = Math.round((score?.solarShare || 0) * 100);
-      const rings = Math.max(1, Math.min(8, Math.round(km / 22) || 1));
-      let sand = "";
-      for (let i = 1; i <= rings; i++) {
-        sand += `<ellipse cx="180" cy="108" rx="${22 + i * 18}" ry="${10 + i * 8}" fill="none" stroke="rgba(228,210,176,${(0.18 + i / 18).toFixed(2)})" stroke-width="1"/>`;
+      const rings = Math.max(2, Math.min(8, Math.round(km / 22) || 2));
+      let raked = "";
+      for (let row = 0; row < 16; row++) {
+        const y = 28 + row * 15;
+        let d = `M 24 ${y}`;
+        for (let x = 40; x <= 640; x += 18) {
+          const wave = Math.sin(x / 70 + row * 0.45) * (3.2 + (row % 3));
+          d += ` L ${x} ${(y + wave).toFixed(1)}`;
+        }
+        raked += `<path d="${d}" fill="none" stroke="rgba(228,210,176,0.34)" stroke-width="0.85" stroke-linecap="round"/>`;
       }
-      return `<svg class="viz" viewBox="0 0 360 200" role="img" aria-label="${esc(km)} kilometres this week, ${share} percent of charging from solar, drawn as raked sand">
-        ${sand}
-        <circle cx="180" cy="108" r="16" fill="#121916" stroke="#e4d2b0"/>
-        <text x="180" y="112" text-anchor="middle" fill="#e4d2b0" font-size="11" font-family="Lotus Serif, Georgia, serif">${share}%</text>
+      let ringsSvg = "";
+      for (let i = 1; i <= rings; i++) {
+        ringsSvg += `<ellipse cx="168" cy="154" rx="${18 + i * 16}" ry="${8 + i * 7}" fill="none" stroke="rgba(240,226,196,${(0.22 + i / 22).toFixed(2)})" stroke-width="1.15"/>`;
+      }
+      return `<svg class="viz" viewBox="0 0 660 280" role="img" aria-label="${esc(km)} kilometres this week, ${share} percent of charging from solar, drawn as raked sand and stones">
+        <rect x="8" y="8" width="644" height="264" rx="22" fill="#141c18" stroke="rgba(240,226,196,0.22)"/>
+        ${raked}
+        ${ringsSvg}
+        <g transform="translate(470 78) rotate(-18)">
+          <ellipse rx="34" ry="18" fill="#1c1915" stroke="#c4a46a" stroke-width="1.2"/>
+          <ellipse rx="16" ry="6" cy="-4" fill="rgba(255,244,220,0.12)"/>
+        </g>
+        <g transform="translate(520 118) rotate(12)">
+          <ellipse rx="18" ry="11" fill="#24201b" stroke="#e4d2b0" stroke-width="0.9"/>
+        </g>
+        <g transform="translate(430 132) rotate(8)">
+          <ellipse rx="14" ry="8" fill="#2a241c" stroke="#c4a46a" stroke-width="0.8"/>
+        </g>
+        <g transform="translate(168 154)">
+          <ellipse rx="28" ry="16" fill="#16130f" stroke="#f0e2c4" stroke-width="1.3"/>
+          <ellipse rx="12" ry="5" cy="-3" fill="rgba(255,248,230,0.16)"/>
+        </g>
+        <text x="560" y="248" text-anchor="middle" fill="#f0e2c4" font-size="20" font-family="Lotus Serif, Georgia, serif">${share}%</text>
       </svg>
       <p class="muted">${esc(km)} km on the odometer this week. ${esc(Number(score?.solarKwh || 0).toFixed(1))} kWh of the car's charge came from the roof, ${esc(Number(score?.gridKwh || 0).toFixed(1))} kWh from the grid. About ${esc(money(score?.dollarsSaved, score?.currency))} not bought.</p>`;
     }
 
     function heatHtml(days) {
-      const cells = (days && days.length) ? days.slice(-21) : [];
+      const cells = (days && days.length) ? days.slice(-28) : [];
+      const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       if (!cells.length) return `<p class="muted">No days in the ledger yet.</p>`;
-      return `<div class="heat">${cells.map((day) => `<div class="cell" style="--self:${Number(day.self).toFixed(2)}" role="img" aria-label="${esc(day.label)}, ${Math.round(day.self * 100)} percent of the house covered by the roof"><span>${esc(day.label)}</span></div>`).join("")}</div>
-        <p class="muted">Each square is a day. Jade means the roof covered more of the house.</p>`;
+      const first = String(cells[0].label || "Mon").split(" ")[0];
+      const offset = Math.max(0, names.indexOf(first));
+      const blanks = Array.from({ length: offset }, () => `<div class="cell empty" aria-hidden="true"></div>`).join("");
+      const squares = cells.map((day) => {
+        const self = Number(day.self) || 0;
+        const dayNo = String(day.label || "").split(" ")[1] || "";
+        const ink = self > 0.62 ? "#14211c" : "#f3f6f1";
+        return `<div class="cell" style="--self:${self.toFixed(2)};--cell:${ink}" role="img" aria-label="${esc(day.label)}, ${Math.round(self * 100)} percent of the house covered by the roof">${esc(String(Number(dayNo) || dayNo))}</div>`;
+      }).join("");
+      return `<div class="cal">${names.map((name) => `<div class="dow">${name}</div>`).join("")}${blanks}${squares}</div>
+        <div class="legend" aria-hidden="true"><span>quiet</span><i style="--self:0.12"></i><i style="--self:0.4"></i><i style="--self:0.68"></i><i style="--self:0.95"></i><span>the roof carried it</span></div>
+        <p class="muted">Four weeks. Jade deepens when the roof covers more of the house.</p>`;
     }
 
     function sessionsHtml(sessions) {
@@ -337,61 +633,159 @@
         else exported += -watts * hours;
       }
       const total = imported + exported || 1;
-      const tilt = Math.max(-12, Math.min(12, ((imported - exported) / total) * 16));
-      return `<svg class="viz" viewBox="0 0 360 160" role="img" aria-label="Grid balance, ${esc((exported / 1000).toFixed(1))} kilowatt hours exported and ${esc((imported / 1000).toFixed(1))} imported over the recent samples">
-        <g transform="rotate(${tilt.toFixed(1)} 180 78)">
-          <line x1="50" y1="78" x2="310" y2="78" stroke="#e4d2b0" stroke-width="1.4"/>
-          <circle cx="78" cy="78" r="${(10 + (exported / total) * 18).toFixed(1)}" fill="none" stroke="#8fbfa8" stroke-width="1.4"/>
-          <circle cx="282" cy="78" r="${(10 + (imported / total) * 18).toFixed(1)}" fill="none" stroke="#7ea8b0" stroke-width="1.4"/>
-        </g>
-        <line x1="180" y1="78" x2="180" y2="118" stroke="#a7b4ab" stroke-width="1"/>
-        <text x="78" y="28" text-anchor="middle" fill="#8fbfa8" font-size="12" font-family="Lotus Sans, sans-serif">out ${(exported / 1000).toFixed(1)}</text>
-        <text x="282" y="28" text-anchor="middle" fill="#7ea8b0" font-size="12" font-family="Lotus Sans, sans-serif">in ${(imported / 1000).toFixed(1)}</text>
+      const tilt = Math.max(-10, Math.min(10, ((imported - exported) / total) * 14));
+      const rad = tilt * Math.PI / 180;
+      const end = (x) => {
+        const dx = x - 220;
+        return [220 + dx * Math.cos(rad), 86 + dx * Math.sin(rad)];
+      };
+      const left = end(78);
+      const right = end(362);
+      const outK = exported / 1000;
+      const inK = imported / 1000;
+      const bowl = (x, y, radius, fill) => {
+        const w = 26 + radius;
+        return `<path d="M${(x - w).toFixed(1)} ${y.toFixed(1)} Q ${x.toFixed(1)} ${(y + 28 + radius * 0.35).toFixed(1)} ${(x + w).toFixed(1)} ${y.toFixed(1)}" fill="${fill}" stroke="#c4a46a" stroke-width="1.1"/>
+          <path d="M${(x - w + 6).toFixed(1)} ${(y + 2).toFixed(1)} Q ${x.toFixed(1)} ${(y + 12 + radius * 0.2).toFixed(1)} ${(x + w - 6).toFixed(1)} ${(y + 2).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
+      };
+      return `<svg class="viz" viewBox="0 0 440 230" role="img" aria-label="Grid balance, ${esc(outK.toFixed(1))} kilowatt hours exported and ${esc(inK.toFixed(1))} imported over the recent samples">
+        <defs>
+          <linearGradient id="beamGold" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#8d6a32"/><stop offset="50%" stop-color="#f6e7c4"/><stop offset="100%" stop-color="#c4a46a"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="220" cy="196" rx="54" ry="10" fill="rgba(0,0,0,0.35)"/>
+        <path d="M196 168 H244 L232 196 H208 Z" fill="#1c1814" stroke="#c4a46a" stroke-width="1"/>
+        <path d="M214 168 V96 H226 V168" fill="#3a3228" stroke="#e4d2b0" stroke-width="0.6"/>
+        <path d="M${left[0].toFixed(1)} ${left[1].toFixed(1)} L 220 86 L ${right[0].toFixed(1)} ${right[1].toFixed(1)}" fill="none" stroke="url(#beamGold)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="220" cy="86" r="5" fill="#fff6df" stroke="#c4a46a"/>
+        <path d="M${left[0].toFixed(1)} ${left[1].toFixed(1)} V ${(left[1] + 36).toFixed(1)}" fill="none" stroke="#a89878" stroke-width="1"/>
+        <path d="M${right[0].toFixed(1)} ${right[1].toFixed(1)} V ${(right[1] + 36).toFixed(1)}" fill="none" stroke="#a89878" stroke-width="1"/>
+        ${bowl(left[0], left[1] + 36, (exported / total) * 16, "rgba(143,191,168,0.85)")}
+        ${bowl(right[0], right[1] + 36, (imported / total) * 16, "rgba(126,168,176,0.85)")}
+        <text x="${left[0].toFixed(1)}" y="28" text-anchor="middle" fill="#8fbfa8" font-size="13" font-family="Lotus Serif, Georgia, serif">out ${outK.toFixed(1)}</text>
+        <text x="${right[0].toFixed(1)}" y="28" text-anchor="middle" fill="#9ec4c8" font-size="13" font-family="Lotus Serif, Georgia, serif">in ${inK.toFixed(1)}</text>
+        <text x="220" y="222" text-anchor="middle" fill="#b7c2b8" font-size="11" letter-spacing="0.14em" font-family="Lotus Sans, sans-serif">KILOWATT HOURS</text>
       </svg>`;
+    }
+
+    function flower(x, y, r, turn) {
+      let petals = "";
+      for (let i = 0; i < 5; i++) {
+        petals += `<ellipse cx="0" cy="${(-r).toFixed(1)}" rx="${(r * 0.52).toFixed(1)}" ry="${(r * 0.78).toFixed(1)}" transform="rotate(${i * 72 + turn})" fill="url(#bloom)" stroke="rgba(255,255,255,0.45)" stroke-width="0.35"/>`;
+      }
+      return `<g transform="translate(${x} ${y})">${petals}<circle r="${(r * 0.28).toFixed(1)}" fill="#f6e7b0"/><circle r="${(r * 0.1).toFixed(1)}" fill="#c4a46a"/></g>`;
     }
 
     function blossomSvg(solarKwh) {
       const kg = Number(solarKwh || 0) * 0.68;
-      const count = Math.max(0, Math.min(9, Math.round(kg / 6)));
-      let flowers = "";
-      for (let i = 0; i < count; i++) {
-        const x = 36 + (i % 5) * 28;
-        const y = 78 - Math.floor(i / 5) * 26 - (i % 2) * 8;
-        flowers += `<circle cx="${x}" cy="${y}" r="6" fill="none" stroke="#e7b7b0" stroke-width="1.2"/>`;
-      }
-      return `<svg class="viz" viewBox="0 0 220 120" role="img" aria-label="About ${esc(kg.toFixed(0))} kilograms of grid carbon avoided, shown as ${count} blossoms">
-        <path d="M20 100 C 60 90, 90 70, 190 46" fill="none" stroke="#8fbfa8" stroke-width="1.2"/>
+      const count = Math.max(0, Math.min(9, Math.round(kg / 8)));
+      const spots = [[86, 78, 13, 8], [132, 96, 15, 20], [178, 86, 12, -6], [214, 64, 14, 12], [258, 70, 11, 4], [300, 48, 13, -10], [338, 40, 10, 16], [118, 62, 9, 0], [236, 46, 9, 8]];
+      const flowers = spots.slice(0, Math.max(count, 3)).map((spot, index) => index < count ? flower(spot[0], spot[1], spot[2], spot[3]) : `<circle cx="${spot[0]}" cy="${spot[1]}" r="3.2" fill="#f0c9c2" opacity="0.8"/>`).join("");
+      return `<svg class="viz" viewBox="0 0 380 180" role="img" aria-label="About ${esc(kg.toFixed(0))} kilograms of grid carbon avoided, shown as blossoms on a cherry branch">
+        <defs>
+          <linearGradient id="bloom" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#e7a8a0"/><stop offset="55%" stop-color="#f6d2cb"/><stop offset="100%" stop-color="#fffaf8"/>
+          </linearGradient>
+          <linearGradient id="bark" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4a342c"/><stop offset="100%" stop-color="#8a6454"/>
+          </linearGradient>
+        </defs>
+        <path d="M18 156 C 70 140, 96 112, 140 102 S 230 78, 360 36" fill="none" stroke="url(#bark)" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M140 102 C 118 78, 96 70, 74 60" fill="none" stroke="#6e4c40" stroke-width="2" stroke-linecap="round"/>
+        <path d="M214 78 C 206 58, 214 46, 228 36" fill="none" stroke="#6e4c40" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M300 52 C 286 40, 286 28, 274 22" fill="none" stroke="#6e4c40" stroke-width="1.4" stroke-linecap="round"/>
         ${flowers}
       </svg>
       <p class="muted">About ${esc(kg.toFixed(0))} kg, counting 0.68 kg per solar kilowatt-hour. A sketch, not an audit.</p>`;
     }
 
+    function koiBody() {
+      return `<g>
+        <path d="M-18 -1 C-30 -16,-40 -10,-34 0 C-40 10,-30 16,-18 1 Z" fill="#f4efe6"/>
+        <path d="M-16 -1 C-28 -12,-34 -6,-18 0 Z" fill="#e36b2c"/>
+        <path d="M22 0 C18 -9,6 -12,-8 -8 C-18 -6,-22 -2,-20 0 C-22 2,-18 6,-8 8 C6 12,18 9,22 0 Z" fill="#e36b2c"/>
+        <path d="M8 -3 C2 -8,-8 -6,-10 0 C-6 4,2 5,8 2 C10 0,10 -1,8 -3 Z" fill="#f7f3ea"/>
+        <path d="M-4 3 C-8 6,-2 7,2 4 Z" fill="#f7f3ea"/>
+        <path d="M-2 -7 C2 -16,8 -14,6 -6" fill="#c4512a"/>
+        <path d="M4 5 C-2 14,10 16,12 6" fill="#f0a070"/>
+        <path d="M16 -1 C20 -6,24 -4,22 0 C24 4,20 6,16 1" fill="#e36b2c"/>
+        <circle cx="18" cy="-1.5" r="1.15" fill="#1a140c"/>
+        <circle cx="18.4" cy="-1.8" r="0.35" fill="#fff"/>
+        <path d="M2 -4 C6 -2,6 2,2 3" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.6"/>
+      </g>`;
+    }
+
+    function koiAt(t) {
+      const c1 = [[36, 150], [120, 156], [150, 62], [230, 96]];
+      const c2 = [[230, 96], [320, 132], [390, 46], [520, 86]];
+      const clamped = Math.min(1, Math.max(0, t));
+      return clamped < 0.5 ? cubic(c1[0], c1[1], c1[2], c1[3], clamped / 0.5) : cubic(c2[0], c2[1], c2[2], c2[3], (clamped - 0.5) / 0.5);
+    }
+
     function koiSvg(percent, km) {
-      const t = percent == null ? 0.15 : Math.min(1, Math.max(0, percent / 100));
-      const x = 28 + t * 250;
-      const y = 78 - Math.sin(t * Math.PI) * 36;
-      return `<svg class="viz" viewBox="0 0 320 130" role="img" aria-label="A koi at ${percent == null ? "an unknown" : Math.round(percent)} percent charge, after ${esc(km)} kilometres this week">
-        <path d="M20 90 C 80 90, 120 30, 300 50" fill="none" stroke="rgba(126,168,176,0.7)" stroke-width="1"/>
-        <g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
-          <ellipse cx="0" cy="0" rx="16" ry="6" fill="none" stroke="#e7b7b0" stroke-width="1.3"/>
-          <path d="M14 0 L24 -6 L22 0 L24 6 Z" fill="none" stroke="#e7b7b0" stroke-width="1"/>
-        </g>
+      const center = percent == null ? 0.42 : 0.1 + (Math.min(100, Math.max(0, Number(percent))) / 100) * 0.72;
+      const a = Math.max(0.05, center - 0.11);
+      const b = Math.min(0.94, center + 0.11);
+      const here = koiAt(center);
+      const ahead = koiAt(Math.min(0.98, center + 0.04));
+      const angle = Math.atan2(ahead[1] - here[1], ahead[0] - here[0]) * 180 / Math.PI;
+      return `<svg class="viz" viewBox="0 0 560 190" role="img" aria-label="A koi at ${percent == null ? "an unknown" : Math.round(percent)} percent charge, after ${esc(km)} kilometres this week">
+        <path d="M36 150 C 120 156, 150 62, 230 96 C 320 132, 390 46, 520 86" fill="none" stroke="rgba(142,184,192,0.55)" stroke-width="1.2"/>
+        <path d="M48 162 C 140 168, 180 92, 250 112 C 340 138, 400 70, 530 102" fill="none" stroke="rgba(240,226,196,0.18)" stroke-width="0.8"/>
+        <g data-koi data-a="${a.toFixed(3)}" data-b="${b.toFixed(3)}" transform="translate(${here[0].toFixed(1)} ${here[1].toFixed(1)}) rotate(${angle.toFixed(1)}) scale(1.7)">${koiBody()}</g>
       </svg>
       <p class="muted">${percent == null ? "The car has not reported a charge." : Math.round(percent) + "% full."} ${esc(km)} km on the week.</p>`;
     }
 
+    function mountKoi() {
+      const fish = document.querySelector("[data-koi]");
+      if (!fish || fish.dataset.bound) return;
+      fish.dataset.bound = "1";
+      const from = Number(fish.dataset.a);
+      const to = Number(fish.dataset.b);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const started = performance.now();
+      const frame = (now) => {
+        if (!fish.isConnected) return;
+        const wave = (Math.sin(((now - started) / 7000) * Math.PI) + 1) / 2;
+        const t = from + (to - from) * wave;
+        const point = koiAt(t);
+        const next = koiAt(Math.min(0.98, t + 0.035));
+        const angle = Math.atan2(next[1] - point[1], next[0] - point[0]) * 180 / Math.PI;
+        fish.setAttribute("transform", `translate(${point[0].toFixed(1)} ${point[1].toFixed(1)}) rotate(${angle.toFixed(1)}) scale(1.7)`);
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    }
+
     function mapHtml() {
-      return `<svg class="viz ripples" viewBox="0 0 640 220" role="img" aria-label="A coarse area about 20 kilometres across. The house is not shown.">
-        <rect width="640" height="220" fill="#101614"/>
-        <g stroke="rgba(228,210,176,0.15)" stroke-width="0.6">
-          ${Array.from({ length: 8 }, (_, i) => `<line x1="${40 + i * 80}" y1="16" x2="${40 + i * 80}" y2="204"/>`).join("")}
-          ${Array.from({ length: 4 }, (_, i) => `<line x1="20" y1="${36 + i * 48}" x2="620" y2="${36 + i * 48}"/>`).join("")}
+      return `<svg class="viz" viewBox="0 0 720 320" role="img" aria-label="A stylised ink map of a coarse area about 20 kilometres across. The house is not shown.">
+        <defs>
+          <filter id="inkEdge" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="0.6"/></filter>
+        </defs>
+        <rect width="720" height="320" rx="18" fill="#e6dfd0"/>
+        <g stroke="#c9c1b0" stroke-width="0.6" opacity="0.7">
+          ${Array.from({ length: 9 }, (_, i) => `<line x1="${40 + i * 80}" y1="16" x2="${40 + i * 80}" y2="304"/>`).join("")}
+          ${Array.from({ length: 5 }, (_, i) => `<line x1="16" y1="${36 + i * 58}" x2="704" y2="${36 + i * 58}"/>`).join("")}
         </g>
-        <g>
-          <ellipse cx="320" cy="112" rx="150" ry="62" fill="none" stroke="#c4a46a" stroke-width="1"/>
-          <ellipse cx="320" cy="112" rx="108" ry="44" fill="rgba(196,164,106,0.08)" stroke="#8fbfa8" stroke-width="0.8"/>
-          <ellipse cx="320" cy="112" rx="62" ry="24" fill="rgba(228,210,176,0.12)" stroke="#e4d2b0" stroke-width="0.6"/>
+        <path filter="url(#inkEdge)" d="M40 210 C 80 160, 120 150, 180 170 C 230 188, 250 120, 310 110 C 380 98, 400 150, 470 140 C 540 130, 560 80, 640 96 C 690 108, 700 160, 690 200 C 670 250, 600 230, 540 250 C 460 276, 400 240, 330 260 C 240 286, 160 250, 90 260 C 50 266, 30 240, 40 210 Z" fill="#2c3834" opacity="0.88"/>
+        <path d="M120 188 C 180 170, 220 190, 280 176 C 340 162, 360 200, 430 188" fill="none" stroke="#d5ddd6" stroke-width="1.4" opacity="0.55"/>
+        <path d="M80 250 C 160 230, 240 250, 340 236 C 460 218, 560 246, 660 228" fill="none" stroke="#8aa097" stroke-width="0.7"/>
+        <path d="M60 120 C 150 100, 240 128, 360 108 C 480 88, 580 120, 700 96" fill="none" stroke="#8aa097" stroke-width="0.7"/>
+        <ellipse cx="360" cy="168" rx="168" ry="72" fill="none" stroke="#8a6a32" stroke-width="1.4"/>
+        <ellipse cx="360" cy="168" rx="118" ry="50" fill="rgba(143,191,168,0.18)" stroke="#5d8d78" stroke-width="0.8"/>
+        <circle cx="360" cy="168" r="3" fill="#8a6a32"/>
+        <g transform="translate(78 64)" font-family="Lotus Sans, sans-serif" fill="#3c342c" font-size="11">
+          <circle r="16" fill="none" stroke="#3c342c"/>
+          <path d="M0 -12 V12 M-12 0 H12" stroke="#3c342c" stroke-width="0.6"/>
+          <text y="-20" text-anchor="middle" font-size="9" letter-spacing="0.12em">N</text>
         </g>
+        <g transform="translate(78 250)">
+          <circle r="22" fill="#9c3b3b"/>
+          <text y="6" text-anchor="middle" fill="#f6efe6" font-family="Lotus Seal, Lotus Serif, serif" font-size="16">白</text>
+        </g>
+        <text x="360" y="292" text-anchor="middle" fill="#3c342c" font-family="Lotus Serif, Georgia, serif" font-size="16">about twenty kilometres</text>
       </svg>
       <p class="muted">About 20 km across. The house is not drawn. Trips from the last day stay off this pond.</p>`;
     }
@@ -403,15 +797,28 @@
       const gridLabel = Math.abs(e.gridW || 0) < 50 ? "Grid quiet" : ((e.gridW || 0) < 0 ? "Leaving" : "Arriving");
       const batteryLabel = (e.batteryW || 0) >= 0 ? "Taking" : "Giving";
       return `<div class="board">
-        <section class="card span2">
-          <p class="kicker">${esc(data.vehicleName || "White Lotus")} · ${data.stale ? "the last note is old" : "live"}</p>
-          <h1>${sunny ? "The roof is giving" : "The roof is quiet"}</h1>
-          <p class="num">${sunny ? kw(e.solarW) : (v.batteryPercent == null ? "—" : Math.round(v.batteryPercent))}<em>${sunny ? "kW" : "% in the car"}</em></p>
-          <div class="figure-row">
-            <div class="figure"><b>${kw(e.homeW)}</b><span>House kW</span></div>
-            <div class="figure"><b>${e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%"}</b><span>Battery ${batteryLabel.toLowerCase()}</span></div>
-            <div class="figure"><b>${kw(Math.abs(e.gridW || 0))}</b><span>${gridLabel}</span></div>
-            <div class="figure"><b>${esc(v.chargingState || (v.online ? "Online" : "Asleep"))}</b><span>Car</span></div>
+        <section class="card span2 hero">
+          <svg class="hero-wash" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+            <defs><filter id="mist"><feGaussianBlur stdDeviation="8"/></filter></defs>
+            <path d="M0 230 C 120 180, 180 120, 280 142 C 390 166, 420 78, 530 102 C 650 128, 700 64, 820 98 C 900 122, 960 170, 1000 148 L 1000 420 L 0 420 Z" fill="#31463e" opacity="0.55"/>
+            <path d="M0 280 C 160 230, 240 200, 360 228 C 500 258, 540 176, 680 196 C 800 214, 900 250, 1000 228 L 1000 420 L 0 420 Z" fill="#243830" opacity="0.72"/>
+            <ellipse cx="280" cy="230" rx="240" ry="40" fill="#e7efe8" opacity="0.14" filter="url(#mist)"/>
+            <ellipse cx="700" cy="200" rx="280" ry="32" fill="#f6f3ea" opacity="0.1" filter="url(#mist)"/>
+          </svg>
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <p class="kicker">${esc(data.vehicleName || "White Lotus")} · ${data.stale ? "the last note is old" : "live"}</p>
+              <h1>${sunny ? "The roof is <em>giving</em>" : "The roof is <em>quiet</em>"}</h1>
+              <p class="lede">Sun, house, battery, grid and the car, held in one pond.</p>
+              <p class="num">${sunny ? kw(e.solarW) : (v.batteryPercent == null ? "—" : Math.round(v.batteryPercent))}<em>${sunny ? "kW" : "% in the car"}</em></p>
+              <div class="figure-row">
+                <div class="figure"><b>${kw(e.homeW)}</b><span>House kW</span></div>
+                <div class="figure"><b>${e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%"}</b><span>Battery ${batteryLabel.toLowerCase()}</span></div>
+                <div class="figure"><b>${kw(Math.abs(e.gridW || 0))}</b><span>${gridLabel}</span></div>
+                <div class="figure"><b>${esc(v.chargingState || (v.online ? "Online" : "Asleep"))}</b><span>Car</span></div>
+              </div>
+            </div>
+            <div class="hero-lotus">${sealLotus()}</div>
           </div>
         </section>
         <section class="card span2">
@@ -422,7 +829,7 @@
         <section class="card">
           <p class="kicker">Home battery</p>
           <h2>The lotus</h2>
-          ${lotusSvg(e.batterySoc)}
+          <div class="lotus-wrap">${lotusSvg(e.batterySoc)}</div>
           <p class="muted">Petals open as the house battery fills.</p>
         </section>
         <section class="card">
@@ -474,6 +881,7 @@
         const response = await fetch("/api/public/dashboard");
         if (!response.ok) throw new Error("The house did not answer");
         app.innerHTML = dashboard(await response.json());
+        mountKoi();
       } catch (error) {
         app.innerHTML = `<section class="card"><h1>The pond is still</h1><p class="muted">${esc(error.message || "Nothing to show yet.")}</p></section>`;
       }
@@ -483,6 +891,7 @@
       const status = await fetch("/api/auth/status").then((r) => r.json()).catch(() => ({ passkeys: 0 }));
       const register = status.passkeys === 0;
       app.innerHTML = `<div class="stage"><section class="card login">
+        <div class="login-lotus">${sealLotus()}</div>
         <p class="kicker">Owner</p>
         <h1>${register ? "A first key" : "Enter quietly"}</h1>
         <p class="muted">${register ? "One passkey, then the door locks. A setup code is required when one has been set." : "Only the owner's passkey opens the command desk."}</p>
@@ -520,6 +929,10 @@
       const settings = model.settings || { chargeLimit: 80, amps: 32, chargeSoc: 80 };
       const e = data.energy || {};
       app.innerHTML = `<div class="board controls">
+        <div class="desk-title span2">
+          <p class="kicker">Command desk</p>
+          <h1>Held <em>quietly</em></h1>
+        </div>
         ${preview ? '<p class="banner span2">A preview. Confirmation is asked, and nothing is sent.</p>' : ""}
         ${preview ? "" : connectionsCard(model)}
         <section class="card">
@@ -532,7 +945,7 @@
         </section>
         <section class="card">
           <p class="kicker">The house right now</p>
-          ${lotusSvg(e.batterySoc)}
+          <div class="lotus-wrap">${lotusSvg(e.batterySoc)}</div>
           <p class="muted">Car ${esc(data.vehicle?.batteryPercent ?? "—")}% · ${esc(data.vehicle?.chargingState || "unknown")}</p>
         </section>
         <section class="card span2">
