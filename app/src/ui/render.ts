@@ -1,11 +1,13 @@
 import { bytesToBase64Url, randomBytes } from "../lib/bytes";
 import page from "./app.html";
+import { fontCss } from "./fonts";
 
 export function renderPage(name: string, boot: unknown): Response {
   const nonce = bytesToBase64Url(randomBytes(16));
   const html = page
     .replaceAll("__PAGE__", name)
     .replaceAll("__NONCE__", nonce)
+    .replace("__FONT_CSS__", fontCss)
     .replace("__BOOT_JSON__", JSON.stringify(boot ?? null).replaceAll("<", "\\u003c"));
   return new Response(html, {
     headers: {
@@ -16,8 +18,8 @@ export function renderPage(name: string, boot: unknown): Response {
       "x-robots-tag": "noindex",
       "content-security-policy": [
         "default-src 'self'",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "font-src https://fonts.gstatic.com",
+        "style-src 'self' 'unsafe-inline'",
+        "font-src data:",
         `script-src 'nonce-${nonce}'`,
         "img-src 'self' data:",
         "connect-src 'self'",

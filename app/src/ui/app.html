@@ -5,104 +5,308 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
   <title>White Lotus</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,640&family=Outfit:wght@360;500;640&display=swap" rel="stylesheet">
+  <style>__FONT_CSS__</style>
   <style>
     :root {
-      --bg: #10140f;
-      --card: rgba(244, 239, 230, 0.045);
-      --line: rgba(243, 236, 223, 0.14);
-      --ink: #f4efe6;
-      --muted: #b4a894;
-      --solar: #f0b429;
-      --battery: #9dce9a;
-      --export: #7eb0c8;
-      --import: #e08a6d;
-      --danger: #e07a62;
+      --wash: #090e0c;
+      --pond: #121916;
+      --sheet: rgba(236, 230, 216, 0.055);
+      --ink: #f3f6f1;
+      --muted: #b7c2b8;
+      --line: rgba(212, 184, 140, 0.32);
+      --gold: #f0e2c4;
+      --gold-deep: #c4a46a;
+      --jade: #8fbfa8;
+      --water: #7ea8b0;
+      --blossom: #f0c9c2;
+      --danger: #e0a090;
       color-scheme: dark;
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      font-family: Outfit, "Avenir Next", system-ui, sans-serif;
+      font-family: "Lotus Sans", "Avenir Next", system-ui, sans-serif;
+      font-weight: 400;
       background:
-        radial-gradient(900px 420px at 0% -10%, rgba(240, 180, 41, 0.18), transparent 55%),
-        radial-gradient(700px 420px at 100% 0%, rgba(126, 176, 200, 0.12), transparent 50%),
-        var(--bg);
+        radial-gradient(1100px 560px at 82% -12%, rgba(228, 196, 140, 0.2), transparent 56%),
+        radial-gradient(820px 620px at -8% 18%, rgba(64, 104, 96, 0.28), transparent 54%),
+        radial-gradient(900px 520px at 50% 120%, rgba(16, 36, 42, 0.55), transparent 60%),
+        var(--wash);
+    }
+    .atmosphere { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .grain, .fibers {
+      position: absolute;
+      inset: -2%;
+    }
+    .grain {
+      opacity: 0.55;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='matrix' values='1 0 0 0 0.25  0 1 0 0 0.2  0 0 1 0 0.12  0 0 0 0.7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+    .fibers {
+      opacity: 0.28;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='f'><feTurbulence type='turbulence' baseFrequency='0.02 0.25' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='1 0 0 0 0.4  0 1 0 0 0.32  0 0 1 0 0.2  0 0 0 0.45 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+    }
+    .ripples { position: absolute; right: -30px; bottom: 6%; width: 340px; height: 150px; }
+    .ripples i {
+      position: absolute;
+      inset: 10%;
+      border: 1px solid rgba(228, 210, 176, 0.28);
+      border-radius: 50%;
+      animation: pond 9s ease-in-out infinite;
+    }
+    .ripples i:nth-child(2) { inset: 0; animation-delay: 1.6s; }
+    .ripples i:nth-child(3) { inset: 22%; animation-delay: 3.1s; }
+    .petal { position: absolute; width: 28px; height: 42px; opacity: 0.7; animation: drift-petal 22s ease-in-out infinite; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.25)); }
+    .petal.p1 { top: 14%; left: 12%; animation-duration: 24s; }
+    .petal.p2 { top: 28%; left: 78%; width: 22px; animation-duration: 19s; animation-delay: -6s; }
+    .petal.p3 { top: 62%; left: 8%; animation-duration: 27s; animation-delay: -11s; }
+    .petal.p4 { top: 74%; left: 86%; width: 18px; animation-duration: 21s; animation-delay: -3s; }
+    .petal.p5 { top: 46%; left: 46%; width: 16px; opacity: 0.35; animation-duration: 30s; animation-delay: -14s; }
+    @keyframes drift-petal {
+      0% { transform: translate3d(0, 0, 0) rotate(-8deg); }
+      50% { transform: translate3d(16px, 28px, 0) rotate(14deg); }
+      100% { transform: translate3d(-10px, 64px, 0) rotate(-4deg); }
+    }
+    @keyframes pond {
+      0%, 100% { transform: scale(0.86); opacity: 0.2; }
+      50% { transform: scale(1.12); opacity: 0.55; }
+    }
+    .rail {
+      display: none;
+      position: fixed;
+      z-index: 2;
+      top: 0;
+      bottom: 0;
+      left: 28px;
+      width: 28px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      pointer-events: none;
+    }
+    .rail span {
+      font-family: "Lotus Seal", "Lotus Serif", serif;
+      font-size: 1.55rem;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .rail b {
+      display: block;
+      width: 1px;
+      height: 88px;
+      background: linear-gradient(var(--gold-deep), transparent);
     }
     a { color: inherit; }
-    header, main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
-    header { display: flex; align-items: flex-end; justify-content: space-between; padding: 28px 0 8px; gap: 16px; }
-    .brand { display: flex; gap: 12px; align-items: center; text-decoration: none; }
-    .brand svg { width: 36px; height: 36px; }
-    .brand strong { display: block; font-family: Fraunces, Georgia, serif; font-size: 1.35rem; letter-spacing: -0.03em; }
-    .brand span { color: var(--muted); font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase; }
-    nav a { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; }
-    nav a:hover { color: var(--ink); border-color: var(--solar); }
-    .board { display: grid; grid-template-columns: 1.35fr 0.85fr; gap: 16px; padding: 18px 0 64px; }
+    :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    .skip {
+      position: absolute;
+      left: 12px;
+      top: -40px;
+      background: var(--gold);
+      color: #1a140c;
+      padding: 8px 12px;
+      z-index: 5;
+    }
+    .skip:focus { top: 12px; }
+    header, main { position: relative; z-index: 1; width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+    header { display: flex; align-items: flex-end; justify-content: space-between; padding: 42px 0 6px; gap: 18px; }
+    .brand { display: flex; gap: 16px; align-items: center; text-decoration: none; }
+    .brand svg.mark { width: 46px; height: 46px; flex: none; }
+    .brand strong { display: block; font-family: "Lotus Serif", Georgia, serif; font-weight: 500; font-size: 2rem; letter-spacing: -0.02em; line-height: 0.95; }
+    .brand .eyebrow, .kicker {
+      color: var(--gold);
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+    }
+    .stamp {
+      font-family: "Lotus Seal", "Lotus Serif", serif;
+      writing-mode: vertical-rl;
+      color: var(--gold);
+      font-size: 0.95rem;
+      letter-spacing: 0.28em;
+      line-height: 1;
+      padding: 4px 0 4px 10px;
+      border-left: 1px solid rgba(228, 210, 176, 0.45);
+    }
+    nav a { color: var(--muted); text-decoration: none; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.72rem; border-bottom: 1px solid transparent; padding-bottom: 3px; }
+    nav a:hover { color: var(--gold); border-color: var(--gold-deep); }
+    .board { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; padding: 22px 0 96px; }
     .span2 { grid-column: span 2; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 22px; }
-    .kicker { margin: 0; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.72rem; }
-    .solar-num { font-family: Fraunces, Georgia, serif; font-weight: 500; font-size: clamp(4.4rem, 8vw, 7rem); line-height: 0.84; letter-spacing: -0.045em; margin: 10px 0 0; }
-    .solar-num em { font-style: normal; color: var(--solar); font-size: 0.38em; margin-left: 8px; }
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
-    .stats.split { grid-template-columns: 1fr 1fr; }
-    .stat { padding: 12px 0 0; border-top: 1px solid var(--line); }
-    .stat b { display: block; font-family: Fraunces, Georgia, serif; font-size: 1.55rem; font-weight: 500; }
-    .stat span { color: var(--muted); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
-    .flow { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; min-height: 220px; }
-    .node { text-align: center; }
-    .node b { display: block; font-family: Fraunces, Georgia, serif; font-size: 1.4rem; }
-    .node span { color: var(--muted); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
-    .score { display: flex; justify-content: space-between; gap: 12px; align-items: flex-end; }
-    .score strong { font-family: Fraunces, Georgia, serif; font-size: 2.4rem; font-weight: 500; display: block; }
-    .bar { height: 10px; border-radius: 99px; background: #2a241c; overflow: hidden; margin: 14px 0; }
-    .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--solar), var(--battery)); }
-    .map { position: relative; min-height: 230px; overflow: hidden; background:
-      linear-gradient(rgba(244,239,230,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(244,239,230,0.05) 1px, transparent 1px);
-      background-size: 28px 28px; border-radius: 18px; }
-    .blob { position: absolute; inset: 18% 16%; border-radius: 50%; background: radial-gradient(circle, rgba(240,180,41,0.55), rgba(240,180,41,0.05) 70%); filter: blur(8px); }
-    .map p { position: absolute; left: 16px; bottom: 12px; margin: 0; color: var(--muted); }
-    .chart { width: 100%; height: 180px; }
-    .chart polyline { fill: none; stroke-width: 2.5; }
-    .legend { display: flex; gap: 14px; color: var(--muted); font-size: 0.8rem; }
-    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 99px; margin-right: 6px; }
-    button, .btn { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; cursor: pointer; }
-    button.primary { background: var(--solar); color: #1a1408; border-color: transparent; font-weight: 640; }
+    .card, .sheet {
+      position: relative;
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(255, 248, 236, 0.07), transparent 46%),
+        linear-gradient(180deg, rgba(236, 230, 216, 0.07), rgba(8, 12, 10, 0.18));
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: 30px 30px 26px;
+      box-shadow:
+        0 30px 60px -36px rgba(0, 0, 0, 0.85),
+        inset 0 1px 0 rgba(255, 248, 236, 0.08),
+        inset 0 0 70px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(240, 226, 196, 0.75), transparent);
+      pointer-events: none;
+    }
+    h1, h2, .num, .exact {
+      font-family: "Lotus Serif", Georgia, serif;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+    }
+    h1 { font-size: clamp(3rem, 6.4vw, 5rem); line-height: 0.9; margin: 0; }
+    h1 em { font-style: italic; color: var(--gold); font-weight: 500; }
+    h2 { font-size: 2rem; line-height: 1.05; margin: 0 0 16px; }
+    .lede { max-width: 38rem; margin: 16px 0 0; color: var(--muted); font-size: 1.05rem; }
+    .num { font-size: clamp(4.2rem, 8vw, 6.4rem); line-height: 0.86; margin: 18px 0 0; }
+    .num em { font-style: italic; color: var(--gold); font-size: 0.34em; margin-left: 10px; letter-spacing: 0; }
+    p { line-height: 1.6; }
+    .muted { color: var(--muted); }
+    .kicker { margin: 0 0 12px; }
+    .figure-row, .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 28px; }
+    .figure { border-top: 1px solid var(--line); padding-top: 12px; }
+    .figure b { display: block; font-family: "Lotus Serif", Georgia, serif; font-size: 1.85rem; font-weight: 500; letter-spacing: -0.03em; }
+    .figure span { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(180px, 280px); gap: 8px 12px; align-items: end; }
+    .hero-wash { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .hero-copy, .hero-lotus { position: relative; z-index: 1; }
+    .hero-lotus { width: min(100%, 280px); margin-left: auto; }
+    svg.viz { width: 100%; height: auto; display: block; }
+    svg.flow path { fill: none; }
+    svg.flow path.stream { stroke-linecap: round; animation: drift 7s linear infinite; }
+    @keyframes drift { to { stroke-dashoffset: -114; } }
+    .lotus-wrap { max-width: 280px; margin: 4px auto 0; }
+    .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
+    .dow { text-align: center; color: var(--muted); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; }
+    .cell {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--cell, #f3f6f1);
+      background: color-mix(in srgb, #9dcfb6 calc(var(--self, 0) * 100%), #17211d);
+      box-shadow: inset 0 0 0 1px rgba(255, 248, 236, 0.06);
+    }
+    .cell.empty { background: transparent; box-shadow: none; }
+    .legend { display: flex; align-items: center; gap: 6px; margin-top: 14px; color: var(--muted); font-size: 0.75rem; }
+    .legend i { width: 14px; height: 14px; border-radius: 4px; display: block; background: color-mix(in srgb, #9dcfb6 calc(var(--self, 0) * 100%), #17211d); }
+    .session { display: grid; grid-template-columns: 7.2rem 1fr auto; gap: 12px; align-items: center; margin: 12px 0; font-size: 0.88rem; }
+    .track { height: 10px; border-radius: 99px; background: rgba(255,255,255,0.05); overflow: hidden; display: flex; box-shadow: inset 0 0 0 1px rgba(228,210,176,0.12); }
+    .track i { display: block; height: 100%; }
+    .track .sun { background: linear-gradient(90deg, #f0e2c4, #c4a46a); }
+    .track .grid { background: linear-gradient(90deg, #9ec4c8, #6f95a4); }
+    .desk-title { padding: 6px 8px 0; }
+    .desk-title h1 { font-size: clamp(2.4rem, 4vw, 3.4rem); }
+    .login-lotus { width: min(168px, 46%); margin: 0 auto 8px; }
+    button, summary { font: inherit; color: var(--ink); }
+    button, .btn {
+      min-height: 44px;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0 16px;
+      cursor: pointer;
+    }
+    button.primary { background: var(--gold); color: #1c160e; border-color: transparent; }
     button.danger { border-color: var(--danger); color: var(--danger); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
-    .controls { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 16px; }
+    button:disabled { opacity: 0.45; }
     .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    label.slider { display: block; margin: 14px 0; }
-    label.slider span { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem; }
-    input[type="range"] { width: 100%; accent-color: var(--solar); }
-    .stepper { display: flex; gap: 8px; margin: 16px 0; }
-    .stepper b { flex: 1; border-top: 2px solid var(--line); padding-top: 8px; color: var(--muted); font-weight: 500; font-size: 0.78rem; }
-    .stepper b.on { border-color: var(--solar); color: var(--ink); }
-    .exact { font-family: Fraunces, Georgia, serif; font-size: 1.8rem; margin: 8px 0; }
-    dialog { border: 1px solid var(--line); background: #171c16; color: var(--ink); border-radius: 20px; padding: 22px; width: min(420px, calc(100% - 32px)); }
-    dialog::backdrop { background: rgba(0,0,0,0.55); }
+    label.slider, label.field { display: block; margin: 14px 0; }
+    label.slider span, label.field span { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.85rem; }
+    input[type="range"] { width: 100%; accent-color: #c4a46a; }
+    input[type="text"], input[type="password"], textarea {
+      width: 100%; margin-top: 6px; background: #0d1210; color: var(--ink);
+      border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit;
+    }
+    .stepper { display: flex; gap: 8px; margin: 14px 0 16px; }
+    .stepper b { flex: 1; border-top: 1px solid var(--line); padding-top: 8px; color: var(--muted); font-weight: 400; font-size: 0.75rem; }
+    .stepper b.on { border-color: var(--gold-deep); color: var(--gold); }
+    .exact { font-family: "Lotus Serif", Georgia, serif; font-size: 1.8rem; margin: 8px 0; }
+    .banner { background: var(--gold); color: #1c160e; border-radius: 16px; padding: 12px 14px; }
+    dialog { border: 1px solid var(--line); background: #17201c; color: var(--ink); border-radius: 22px; padding: 22px; width: min(420px, calc(100% - 32px)); }
+    dialog::backdrop { background: rgba(0,0,0,0.6); }
     dialog p { color: var(--muted); }
-    .banner { color: #1a1408; background: var(--solar); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; }
-    .login { max-width: 460px; margin: 48px auto; }
-    input[type="text"], input[type="password"], textarea { width: 100%; background: #0d110c; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; }
     .error { color: var(--danger); min-height: 1.2em; }
-    @media (max-width: 860px) {
-      .board, .controls, .stats { grid-template-columns: 1fr; }
+    .stage { min-height: calc(100vh - 120px); display: grid; place-items: center; padding: 24px 0 64px; }
+    .login { width: min(440px, 100%); }
+    .login h1 { font-size: 2.6rem; }
+    details summary { cursor: pointer; color: var(--muted); margin-top: 12px; }
+    @media (min-width: 1240px) {
+      .rail { display: flex; }
+      header, main { width: min(1120px, calc(100% - 140px)); }
+    }
+    @media (max-width: 800px) {
+      header, main { width: min(100% - 36px, 1120px); }
+      header { flex-direction: column; align-items: flex-start; padding: 28px 0 4px; gap: 14px; }
+      .brand strong { font-size: 1.65rem; }
+      .stamp { font-size: 0.85rem; }
+      .board { grid-template-columns: 1fr; gap: 16px; padding: 16px 0 72px; }
       .span2 { grid-column: auto; }
-      header { align-items: flex-start; flex-direction: column; }
+      .card { padding: 22px 18px 18px; border-radius: 24px; }
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-lotus { width: min(210px, 68%); margin: 0 auto 4px; order: -1; }
+      h1 { font-size: 2.55rem; }
+      h2 { font-size: 1.65rem; margin-bottom: 12px; }
+      .lede { font-size: 0.98rem; margin-top: 12px; }
+      .num { font-size: 3.35rem; margin-top: 12px; }
+      .figure-row, .stats { grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-top: 20px; }
+      .figure b { font-size: 1.45rem; }
+      .cal { gap: 5px; }
+      .cell { font-size: 0.62rem; border-radius: 7px; }
+      .session { grid-template-columns: 5.4rem minmax(0, 1fr) auto; gap: 8px; }
+      .ripples { display: none; }
+      .petal.p3, .petal.p5 { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body data-page="__PAGE__">
+  <a class="skip" href="#app">Skip to content</a>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="grain"></div>
+    <div class="fibers"></div>
+    <div class="ripples"><i></i><i></i><i></i></div>
+    <svg class="petal p1" viewBox="0 0 48 72"><path d="M24 70 C 8 48, 6 22, 24 2 C 42 22, 40 48, 24 70 Z" fill="#f0c9c2"/></svg>
+    <svg class="petal p2" viewBox="0 0 48 72"><path d="M24 70 C 10 46, 8 20, 24 4 C 40 20, 38 46, 24 70 Z" fill="#f7f1e4"/></svg>
+    <svg class="petal p3" viewBox="0 0 48 72"><path d="M24 68 C 12 46, 10 24, 24 6 C 38 24, 36 46, 24 68 Z" fill="#e7b7b0"/></svg>
+    <svg class="petal p4" viewBox="0 0 48 72"><path d="M24 70 C 9 48, 8 22, 24 3 C 40 22, 39 48, 24 70 Z" fill="#f3e6c8"/></svg>
+    <svg class="petal p5" viewBox="0 0 48 72"><path d="M24 66 C 14 46, 12 26, 24 8 C 36 26, 34 46, 24 66 Z" fill="#f7f1e4"/></svg>
+  </div>
+  <aside class="rail" aria-hidden="true"><span>白</span><b></b><span>蓮</span></aside>
   <header>
     <a class="brand" href="/">
-      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="none" stroke="#f0b429" stroke-width="2"/><path d="M32 10c8 10 8 16 0 24-8-8-8-14 0-24zm0 20c10 4 16 8 18 16-12-2-16-6-18-16zm0 0c-10 4-16 8-18 16 12-2 16-6 18-16z" fill="#f4efe6"/></svg>
-      <div><span>Home energy</span><strong>White Lotus</strong></div>
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="30" fill="none" stroke="#c4a46a" stroke-width="1"/>
+        <path d="M32 12c7 9 8 16 0 22-8-6-7-13 0-22z" fill="url(#markGold)" stroke="#f0e2c4" stroke-width="0.6"/>
+        <path d="M32 30c10 4 16 10 16 16-10-2-14-7-16-16z" fill="#8fbfa8" opacity="0.85"/>
+        <path d="M32 30c-10 4-16 10-16 16 10-2 14-7 16-16z" fill="#6ea48c"/>
+        <defs>
+          <linearGradient id="markGold" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#a8843e"/><stop offset="0.5" stop-color="#f3e6c8"/><stop offset="1" stop-color="#c4a46a"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div><span class="eyebrow">Moonlit pond</span><strong>White Lotus</strong></div>
+      <span class="stamp">白蓮</span>
     </a>
     <nav id="nav"></nav>
   </header>
@@ -118,7 +322,7 @@
     const boot = JSON.parse(document.getElementById("boot").textContent || "null");
     const app = document.getElementById("app");
     const nav = document.getElementById("nav");
-    nav.innerHTML = page === "public" || page === "login" ? '<a href="/login">Owner</a>' : '<a href="/">Dashboard</a>';
+    nav.innerHTML = page === "public" || page === "login" ? '<a href="/login">Owner</a>' : '<a href="/">The pond</a>';
 
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -127,6 +331,11 @@
     function money(value, currency) {
       try { return new Intl.NumberFormat("en-AU", { style: "currency", currency: currency || "AUD" }).format(value || 0); }
       catch { return "$" + Number(value || 0).toFixed(2); }
+    }
+    function hourIn(ts, timeZone) {
+      const parts = new Intl.DateTimeFormat("en-US", { timeZone: timeZone || "Australia/Sydney", hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ts));
+      const hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
+      return hour === 24 ? 0 : hour;
     }
     function ask(title, detail) {
       const dialog = document.getElementById("confirm");
@@ -142,88 +351,554 @@
       });
     }
 
-    function chart(history) {
-      const points = history || [];
-      if (points.length < 2) return "<p>No history yet.</p>";
-      const w = 640, h = 170;
-      const max = Math.max(500, ...points.map((p) => Math.max(p.solarW || 0, p.homeW || 0, Math.abs(p.gridW || 0))));
-      const x = (i) => (i / (points.length - 1)) * (w - 8) + 4;
-      const y = (v) => h - 12 - (Math.max(0, v) / max) * (h - 24);
-      const line = (key) => points.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(key === "gridW" ? Math.abs(p.gridW || 0) : p[key] || 0).toFixed(1)).join(" ");
-      return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="Last 24 hours">
-        <path fill="none" stroke="#f0b429" stroke-width="2.5" d="${line("solarW")}"></path>
-        <path fill="none" stroke="#f4efe6" stroke-width="2.5" d="${line("homeW")}"></path>
-        <path fill="none" stroke="#7eb0c8" stroke-width="2.5" d="${line("gridW")}"></path>
-      </svg>
-      <div class="legend"><span><i style="background:#f0b429"></i>Solar</span><span><i style="background:#f4efe6"></i>Home</span><span><i style="background:#7eb0c8"></i>Grid</span></div>`;
+    const PETAL = "M0,12 C-18,2 -24,-36 -8,-78 C-2,-90 2,-90 8,-78 C24,-36 18,2 0,12 Z";
+
+    function cubic(p0, p1, p2, p3, t) {
+      const u = 1 - t;
+      return [
+        u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+        u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+      ];
     }
 
-    function dashboardHtml(data, exact) {
+    function brush(x1, y1, x2, y2, bow, watts, color) {
+      const c1 = [x1 + (x2 - x1) * 0.34, y1 + bow];
+      const c2 = [x1 + (x2 - x1) * 0.66, y2 + bow * 0.35];
+      const p0 = [x1, y1];
+      const p3 = [x2, y2];
+      const width = 0.7 + Math.min(8.5, Math.abs(Number(watts) || 0) / 1000 * 1.25);
+      const steps = 28;
+      let body = "";
+      for (let i = 0; i < steps; i++) {
+        const t0 = i / steps;
+        const t1 = (i + 1) / steps;
+        const a = cubic(p0, c1, c2, p3, t0);
+        const b = cubic(p0, c1, c2, p3, t1);
+        const taper = Math.sin(Math.PI * ((t0 + t1) / 2)) ** 0.8;
+        const w = (0.35 + width * taper).toFixed(2);
+        body += `<path fill="none" stroke="${color}" stroke-linecap="round" stroke-width="${w}" opacity="${(0.22 + 0.78 * taper).toFixed(2)}" d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${b[0].toFixed(1)} ${b[1].toFixed(1)}"/>`;
+      }
+      const d = `M${x1} ${y1} C ${c1[0].toFixed(1)} ${c1[1].toFixed(1)}, ${c2[0].toFixed(1)} ${c2[1].toFixed(1)}, ${x2} ${y2}`;
+      const glow = `<path fill="none" stroke="${color}" stroke-width="${(width * 0.55 + 3.2).toFixed(2)}" stroke-linecap="round" opacity="0.38" filter="url(#flowGlow)" d="${d}"/>`;
+      const stream = `<path class="stream" fill="none" stroke="${color}" stroke-width="1.15" stroke-linecap="round" stroke-dasharray="2 18" opacity="0.9" d="${d}"/>`;
+      return glow + body + stream;
+    }
+
+    function flowSvg(energy, vehicle) {
+      const e = energy || {};
+      const carW = e.chargerW || (vehicle && vehicle.chargingState === "Charging" ? 3000 : 180);
+      const nodes = [
+        ["Sun", kw(e.solarW), 78, 72],
+        ["House", kw(e.homeW), 286, 78],
+        ["Car", vehicle && vehicle.batteryPercent != null ? Math.round(vehicle.batteryPercent) + "%" : "—", 492, 70],
+        ["Battery", e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%", 176, 196],
+        ["Grid", kw(Math.abs(e.gridW || 0)), 392, 198],
+      ];
+      const strokes = [
+        brush(78, 72, 286, 78, -48, e.solarW, "#f0e2c4"),
+        brush(286, 96, 176, 178, 36, Math.abs(e.batteryW || 0), "#8fbfa8"),
+        brush(286, 96, 392, 180, -28, Math.abs(e.gridW || 0), "#8eb8c0"),
+        brush(310, 70, 468, 70, -34, carW, "#f0c9c2"),
+      ].join("");
+      const labels = nodes.map(([name, value, x, y]) =>
+        `<g>
+          <circle cx="${x}" cy="${y}" r="34" fill="#101614" stroke="#c4a46a" stroke-width="1"/>
+          <circle cx="${x}" cy="${y}" r="27" fill="none" stroke="rgba(240,226,196,0.28)" stroke-width="0.6"/>
+          <text x="${x}" y="${y - 1}" text-anchor="middle" fill="#f3f6f1" font-size="13" font-family="Lotus Serif, Georgia, serif">${esc(value)}</text>
+          <text x="${x}" y="${y + 14}" text-anchor="middle" fill="#c4a46a" font-size="8" letter-spacing="0.16em" font-family="Lotus Sans, sans-serif">${esc(name).toUpperCase()}</text>
+        </g>`
+      ).join("");
+      return `<svg class="viz flow" fill="none" viewBox="0 0 570 250" role="img" aria-label="Energy flowing between the sun, house, battery, grid and car">
+        <defs>
+          <filter id="flowGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3.2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        ${strokes}${labels}
+      </svg>`;
+    }
+
+    function petalGroup(open, outer, inner) {
+      const sx = 0.32 + open * 0.62;
+      const sy = 0.62 + open * 0.4;
+      const lift = 6 + open * 18;
+      let out = "";
+      for (let i = 0; i < 8; i++) {
+        out += `<path d="${PETAL}" fill="${outer}" transform="rotate(${i * 45}) translate(0 ${(-lift).toFixed(1)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)})"/>`;
+      }
+      for (let i = 0; i < 8; i++) {
+        out += `<path d="${PETAL}" fill="${inner}" transform="rotate(${i * 45 + 22}) translate(0 ${(-(lift * 0.45)).toFixed(1)}) scale(${(sx * 0.62).toFixed(3)} ${(sy * 0.72).toFixed(3)})"/>`;
+      }
+      for (let i = 0; i < 5; i++) {
+        out += `<path d="${PETAL}" fill="#fffaf8" opacity="0.92" transform="rotate(${i * 72 + 8}) translate(0 ${(-(lift * 0.15)).toFixed(1)}) scale(${(sx * 0.38).toFixed(3)} ${(sy * 0.5).toFixed(3)})"/>`;
+      }
+      return out;
+    }
+
+    function lotusSvg(soc) {
+      const open = soc == null ? 0.42 : 0.18 + (Number(soc) / 100) * 0.82;
+      const label = soc == null ? "No reading" : Math.round(soc) + " percent";
+      return `<svg class="viz" viewBox="0 0 220 250" role="img" aria-label="Home battery, drawn as a lotus ${esc(label)} open">
+        <defs>
+          <linearGradient id="socOuter" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#d97878"/><stop offset="42%" stop-color="#f3c3bc"/><stop offset="100%" stop-color="#fffdfb"/>
+          </linearGradient>
+          <linearGradient id="socInner" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#f0b8b0"/><stop offset="100%" stop-color="#ffffff"/>
+          </linearGradient>
+          <radialGradient id="socPad" cx="50%" cy="42%" r="60%">
+            <stop offset="0%" stop-color="#d7efe2"/><stop offset="62%" stop-color="#6ea48c"/><stop offset="100%" stop-color="#2a463c"/>
+          </radialGradient>
+        </defs>
+        <g transform="translate(110 128)">
+          <ellipse cx="0" cy="28" rx="84" ry="24" fill="url(#socPad)"/>
+          <path d="M18 14 L46 30 L16 36 Z" fill="#10211b" opacity="0.45"/>
+          <ellipse cx="18" cy="20" rx="22" ry="6" fill="rgba(255,255,255,0.18)"/>
+          ${petalGroup(open, "url(#socOuter)", "url(#socInner)")}
+          <circle r="${(5 + open * 3).toFixed(1)}" fill="#f6e7b0"/>
+          <circle r="2.2" fill="#c4a46a"/>
+        </g>
+        <text x="110" y="232" text-anchor="middle" fill="#f0e2c4" font-family="Lotus Serif, Georgia, serif" font-size="28">${soc == null ? "—" : Math.round(soc) + "%"}</text>
+      </svg>`;
+    }
+
+    function sealLotus() {
+      return `<svg class="viz" viewBox="0 0 220 230" aria-hidden="true">
+        <defs>
+          <linearGradient id="leafGold" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stop-color="#8d6a32"/><stop offset="42%" stop-color="#f6e7c4"/><stop offset="100%" stop-color="#c4a46a"/>
+          </linearGradient>
+          <linearGradient id="leafPale" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#e7d3a4"/><stop offset="100%" stop-color="#fffaf1"/>
+          </linearGradient>
+          <radialGradient id="leafPad" cx="50%" cy="40%" r="65%">
+            <stop offset="0%" stop-color="#d5ecdf"/><stop offset="70%" stop-color="#5d8d78"/><stop offset="100%" stop-color="#1e3830"/>
+          </radialGradient>
+          <filter id="leafGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.4"/>
+          </filter>
+        </defs>
+        <g transform="translate(110 118)">
+          <ellipse cx="0" cy="34" rx="78" ry="16" fill="rgba(0,0,0,0.28)"/>
+          <ellipse cx="0" cy="26" rx="86" ry="24" fill="url(#leafPad)"/>
+          <path d="M16 12 L42 28 L14 34 Z" fill="#143028" opacity="0.4"/>
+          <g opacity="0.55" filter="url(#leafGlow)">${petalGroup(1, "#e4c98a", "#f6e7c4")}</g>
+          ${petalGroup(1, "url(#leafGold)", "url(#leafPale)")}
+          <circle r="7" fill="#fff6df"/>
+          <circle r="3" fill="#c4a46a"/>
+        </g>
+      </svg>`;
+    }
+
+    function clockIn(ts, timeZone) {
+      const parts = new Intl.DateTimeFormat("en-US", { timeZone: timeZone || "Australia/Sydney", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ts));
+      let hour = Number(parts.find((part) => part.type === "hour")?.value || 0);
+      const minute = Number(parts.find((part) => part.type === "minute")?.value || 0);
+      if (hour === 24) hour = 0;
+      return hour + minute / 60;
+    }
+
+    function sunSvg(history, timeZone) {
+      const samples = [];
+      for (const point of history || []) {
+        const hour = clockIn(point.ts, timeZone);
+        if (hour >= 5.5 && hour <= 19.2) samples.push({ hour, watts: point.solarW || 0 });
+      }
+      samples.sort((a, b) => a.hour - b.hour);
+      const max = Math.max(600, ...samples.map((sample) => sample.watts), 0);
+      const left = 48;
+      const right = 392;
+      const base = 168;
+      const cx = (left + right) / 2;
+      const radius = (right - left) / 2;
+      const xOf = (hour) => left + ((hour - 6) / 12) * (right - left);
+      const yOf = (watts) => base - (Math.max(0, watts) / max) * (radius * 0.58);
+      const curve = samples.filter((sample) => sample.hour >= 6 && sample.hour <= 18).map((sample) => [xOf(sample.hour), yOf(sample.watts)]);
+      if (curve.length < 2) {
+        curve.push([xOf(6), base], [xOf(12), base - 8], [xOf(18), base]);
+      }
+      const line = curve.map((point, index) => `${index ? "L" : "M"}${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(" ");
+      const area = `M${curve[0][0].toFixed(1)} ${base} ` + curve.map((point) => `L${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(" ") + ` L${curve[curve.length - 1][0].toFixed(1)} ${base} Z`;
+      const cy = base;
+      const now = Math.min(1, Math.max(0, (clockIn(Date.now(), timeZone) - 6) / 12));
+      const angle = Math.PI * (1 - now);
+      const sx = cx + radius * Math.cos(angle);
+      const sy = cy - radius * Math.sin(angle);
+      const dropX = xOf(6 + now * 12);
+      return `<svg class="viz" viewBox="0 0 440 210" role="img" aria-label="Today's solar curve filled under the sun's arc">
+        <defs>
+          <linearGradient id="solarFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f0e2c4" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#c4a46a" stop-opacity="0.05"/>
+          </linearGradient>
+          <filter id="sunGlow" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="4"/>
+          </filter>
+        </defs>
+        <path d="M${left} ${cy} A ${radius} ${radius} 0 0 1 ${right} ${cy}" fill="none" stroke="rgba(240,226,196,0.55)" stroke-width="1.4"/>
+        <path d="${area}" fill="url(#solarFill)" stroke="none"/>
+        <path d="${line}" fill="none" stroke="#f6e7c4" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="${left}" y1="${base}" x2="${right}" y2="${base}" stroke="rgba(240,226,196,0.28)" stroke-width="1"/>
+        <line x1="${dropX.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${dropX.toFixed(1)}" y2="${base}" stroke="rgba(240,226,196,0.35)" stroke-dasharray="2 4"/>
+        <g filter="url(#sunGlow)"><circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="16" fill="#f0e2c4" opacity="0.55"/></g>
+        <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="8" fill="#fff6df"/>
+        <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="3.2" fill="#fff"/>
+        <text x="36" y="198" fill="#b7c2b8" font-size="11" letter-spacing="0.16em" font-family="Lotus Sans, sans-serif">DAWN</text>
+        <text x="368" y="198" fill="#b7c2b8" font-size="11" letter-spacing="0.16em" font-family="Lotus Sans, sans-serif">DUSK</text>
+      </svg>`;
+    }
+
+    function gardenSvg(score) {
+      const km = Number(score?.kmDriven || 0);
+      const share = Math.round((score?.solarShare || 0) * 100);
+      const rings = Math.max(2, Math.min(8, Math.round(km / 22) || 2));
+      let raked = "";
+      for (let row = 0; row < 16; row++) {
+        const y = 28 + row * 15;
+        let d = `M 24 ${y}`;
+        for (let x = 40; x <= 640; x += 18) {
+          const wave = Math.sin(x / 70 + row * 0.45) * (3.2 + (row % 3));
+          d += ` L ${x} ${(y + wave).toFixed(1)}`;
+        }
+        raked += `<path d="${d}" fill="none" stroke="rgba(228,210,176,0.34)" stroke-width="0.85" stroke-linecap="round"/>`;
+      }
+      let ringsSvg = "";
+      for (let i = 1; i <= rings; i++) {
+        ringsSvg += `<ellipse cx="168" cy="154" rx="${18 + i * 16}" ry="${8 + i * 7}" fill="none" stroke="rgba(240,226,196,${(0.22 + i / 22).toFixed(2)})" stroke-width="1.15"/>`;
+      }
+      return `<svg class="viz" viewBox="0 0 660 280" role="img" aria-label="${esc(km)} kilometres this week, ${share} percent of charging from solar, drawn as raked sand and stones">
+        <rect x="8" y="8" width="644" height="264" rx="22" fill="#141c18" stroke="rgba(240,226,196,0.22)"/>
+        ${raked}
+        ${ringsSvg}
+        <g transform="translate(470 78) rotate(-18)">
+          <ellipse rx="34" ry="18" fill="#1c1915" stroke="#c4a46a" stroke-width="1.2"/>
+          <ellipse rx="16" ry="6" cy="-4" fill="rgba(255,244,220,0.12)"/>
+        </g>
+        <g transform="translate(520 118) rotate(12)">
+          <ellipse rx="18" ry="11" fill="#24201b" stroke="#e4d2b0" stroke-width="0.9"/>
+        </g>
+        <g transform="translate(430 132) rotate(8)">
+          <ellipse rx="14" ry="8" fill="#2a241c" stroke="#c4a46a" stroke-width="0.8"/>
+        </g>
+        <g transform="translate(168 154)">
+          <ellipse rx="28" ry="16" fill="#16130f" stroke="#f0e2c4" stroke-width="1.3"/>
+          <ellipse rx="12" ry="5" cy="-3" fill="rgba(255,248,230,0.16)"/>
+        </g>
+        <text x="560" y="248" text-anchor="middle" fill="#f0e2c4" font-size="20" font-family="Lotus Serif, Georgia, serif">${share}%</text>
+      </svg>
+      <p class="muted">${esc(km)} km on the odometer this week. ${esc(Number(score?.solarKwh || 0).toFixed(1))} kWh of the car's charge came from the roof, ${esc(Number(score?.gridKwh || 0).toFixed(1))} kWh from the grid. About ${esc(money(score?.dollarsSaved, score?.currency))} not bought.</p>`;
+    }
+
+    function heatHtml(days) {
+      const cells = (days && days.length) ? days.slice(-28) : [];
+      const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      if (!cells.length) return `<p class="muted">No days in the ledger yet.</p>`;
+      const first = String(cells[0].label || "Mon").split(" ")[0];
+      const offset = Math.max(0, names.indexOf(first));
+      const blanks = Array.from({ length: offset }, () => `<div class="cell empty" aria-hidden="true"></div>`).join("");
+      const squares = cells.map((day) => {
+        const self = Number(day.self) || 0;
+        const dayNo = String(day.label || "").split(" ")[1] || "";
+        const ink = self > 0.62 ? "#14211c" : "#f3f6f1";
+        return `<div class="cell" style="--self:${self.toFixed(2)};--cell:${ink}" role="img" aria-label="${esc(day.label)}, ${Math.round(self * 100)} percent of the house covered by the roof">${esc(String(Number(dayNo) || dayNo))}</div>`;
+      }).join("");
+      return `<div class="cal">${names.map((name) => `<div class="dow">${name}</div>`).join("")}${blanks}${squares}</div>
+        <div class="legend" aria-hidden="true"><span>quiet</span><i style="--self:0.12"></i><i style="--self:0.4"></i><i style="--self:0.68"></i><i style="--self:0.95"></i><span>the roof carried it</span></div>
+        <p class="muted">Four weeks. Jade deepens when the roof covers more of the house.</p>`;
+    }
+
+    function sessionsHtml(sessions) {
+      const rows = sessions || [];
+      if (!rows.length) return `<p class="muted">No charge recorded in this ledger.</p>`;
+      const max = Math.max(...rows.map((row) => row.solarKwh + row.gridKwh), 0.1);
+      return rows.slice(-6).map((row) => {
+        const total = row.solarKwh + row.gridKwh;
+        const sun = Math.round((row.solarKwh / max) * 100);
+        const grid = Math.round((row.gridKwh / max) * 100);
+        const start = new Date(row.start);
+        const label = start.toLocaleString("en-AU", { weekday: "short", hour: "numeric", minute: "2-digit" });
+        return `<div class="session"><span>${esc(label)}</span><div class="track" role="img" aria-label="${esc(row.solarKwh.toFixed(1))} kilowatt hours solar and ${esc(row.gridKwh.toFixed(1))} from the grid"><i class="sun" style="width:${sun}%"></i><i class="grid" style="width:${grid}%"></i></div><span>${esc(total.toFixed(1))} kWh</span></div>`;
+      }).join("");
+    }
+
+    function balanceSvg(history) {
+      let imported = 0, exported = 0;
+      const points = history || [];
+      for (let i = 1; i < points.length; i++) {
+        const hours = (points[i].ts - points[i - 1].ts) / 3_600_000;
+        if (hours <= 0 || hours > 1) continue;
+        const watts = points[i].gridW || 0;
+        if (watts >= 0) imported += watts * hours;
+        else exported += -watts * hours;
+      }
+      const total = imported + exported || 1;
+      const tilt = Math.max(-10, Math.min(10, ((imported - exported) / total) * 14));
+      const rad = tilt * Math.PI / 180;
+      const end = (x) => {
+        const dx = x - 220;
+        return [220 + dx * Math.cos(rad), 86 + dx * Math.sin(rad)];
+      };
+      const left = end(78);
+      const right = end(362);
+      const outK = exported / 1000;
+      const inK = imported / 1000;
+      const bowl = (x, y, radius, fill) => {
+        const w = 26 + radius;
+        return `<path d="M${(x - w).toFixed(1)} ${y.toFixed(1)} Q ${x.toFixed(1)} ${(y + 28 + radius * 0.35).toFixed(1)} ${(x + w).toFixed(1)} ${y.toFixed(1)}" fill="${fill}" stroke="#c4a46a" stroke-width="1.1"/>
+          <path d="M${(x - w + 6).toFixed(1)} ${(y + 2).toFixed(1)} Q ${x.toFixed(1)} ${(y + 12 + radius * 0.2).toFixed(1)} ${(x + w - 6).toFixed(1)} ${(y + 2).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>`;
+      };
+      return `<svg class="viz" viewBox="0 0 440 230" role="img" aria-label="Grid balance, ${esc(outK.toFixed(1))} kilowatt hours exported and ${esc(inK.toFixed(1))} imported over the recent samples">
+        <defs>
+          <linearGradient id="beamGold" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#8d6a32"/><stop offset="50%" stop-color="#f6e7c4"/><stop offset="100%" stop-color="#c4a46a"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="220" cy="196" rx="54" ry="10" fill="rgba(0,0,0,0.35)"/>
+        <path d="M196 168 H244 L232 196 H208 Z" fill="#1c1814" stroke="#c4a46a" stroke-width="1"/>
+        <path d="M214 168 V96 H226 V168" fill="#3a3228" stroke="#e4d2b0" stroke-width="0.6"/>
+        <path d="M${left[0].toFixed(1)} ${left[1].toFixed(1)} L 220 86 L ${right[0].toFixed(1)} ${right[1].toFixed(1)}" fill="none" stroke="url(#beamGold)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="220" cy="86" r="5" fill="#fff6df" stroke="#c4a46a"/>
+        <path d="M${left[0].toFixed(1)} ${left[1].toFixed(1)} V ${(left[1] + 36).toFixed(1)}" fill="none" stroke="#a89878" stroke-width="1"/>
+        <path d="M${right[0].toFixed(1)} ${right[1].toFixed(1)} V ${(right[1] + 36).toFixed(1)}" fill="none" stroke="#a89878" stroke-width="1"/>
+        ${bowl(left[0], left[1] + 36, (exported / total) * 16, "rgba(143,191,168,0.85)")}
+        ${bowl(right[0], right[1] + 36, (imported / total) * 16, "rgba(126,168,176,0.85)")}
+        <text x="${left[0].toFixed(1)}" y="28" text-anchor="middle" fill="#8fbfa8" font-size="13" font-family="Lotus Serif, Georgia, serif">out ${outK.toFixed(1)}</text>
+        <text x="${right[0].toFixed(1)}" y="28" text-anchor="middle" fill="#9ec4c8" font-size="13" font-family="Lotus Serif, Georgia, serif">in ${inK.toFixed(1)}</text>
+        <text x="220" y="222" text-anchor="middle" fill="#b7c2b8" font-size="11" letter-spacing="0.14em" font-family="Lotus Sans, sans-serif">KILOWATT HOURS</text>
+      </svg>`;
+    }
+
+    function flower(x, y, r, turn) {
+      let petals = "";
+      for (let i = 0; i < 5; i++) {
+        petals += `<ellipse cx="0" cy="${(-r).toFixed(1)}" rx="${(r * 0.52).toFixed(1)}" ry="${(r * 0.78).toFixed(1)}" transform="rotate(${i * 72 + turn})" fill="url(#bloom)" stroke="rgba(255,255,255,0.45)" stroke-width="0.35"/>`;
+      }
+      return `<g transform="translate(${x} ${y})">${petals}<circle r="${(r * 0.28).toFixed(1)}" fill="#f6e7b0"/><circle r="${(r * 0.1).toFixed(1)}" fill="#c4a46a"/></g>`;
+    }
+
+    function blossomSvg(solarKwh) {
+      const kg = Number(solarKwh || 0) * 0.68;
+      const count = Math.max(0, Math.min(9, Math.round(kg / 8)));
+      const spots = [[86, 78, 13, 8], [132, 96, 15, 20], [178, 86, 12, -6], [214, 64, 14, 12], [258, 70, 11, 4], [300, 48, 13, -10], [338, 40, 10, 16], [118, 62, 9, 0], [236, 46, 9, 8]];
+      const flowers = spots.slice(0, Math.max(count, 3)).map((spot, index) => index < count ? flower(spot[0], spot[1], spot[2], spot[3]) : `<circle cx="${spot[0]}" cy="${spot[1]}" r="3.2" fill="#f0c9c2" opacity="0.8"/>`).join("");
+      return `<svg class="viz" viewBox="0 0 380 180" role="img" aria-label="About ${esc(kg.toFixed(0))} kilograms of grid carbon avoided, shown as blossoms on a cherry branch">
+        <defs>
+          <linearGradient id="bloom" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#e7a8a0"/><stop offset="55%" stop-color="#f6d2cb"/><stop offset="100%" stop-color="#fffaf8"/>
+          </linearGradient>
+          <linearGradient id="bark" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4a342c"/><stop offset="100%" stop-color="#8a6454"/>
+          </linearGradient>
+        </defs>
+        <path d="M18 156 C 70 140, 96 112, 140 102 S 230 78, 360 36" fill="none" stroke="url(#bark)" stroke-width="4.2" stroke-linecap="round"/>
+        <path d="M140 102 C 118 78, 96 70, 74 60" fill="none" stroke="#6e4c40" stroke-width="2" stroke-linecap="round"/>
+        <path d="M214 78 C 206 58, 214 46, 228 36" fill="none" stroke="#6e4c40" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M300 52 C 286 40, 286 28, 274 22" fill="none" stroke="#6e4c40" stroke-width="1.4" stroke-linecap="round"/>
+        ${flowers}
+      </svg>
+      <p class="muted">About ${esc(kg.toFixed(0))} kg, counting 0.68 kg per solar kilowatt-hour. A sketch, not an audit.</p>`;
+    }
+
+    function koiBody() {
+      return `<g>
+        <path d="M-18 -1 C-30 -16,-40 -10,-34 0 C-40 10,-30 16,-18 1 Z" fill="#f4efe6"/>
+        <path d="M-16 -1 C-28 -12,-34 -6,-18 0 Z" fill="#e36b2c"/>
+        <path d="M22 0 C18 -9,6 -12,-8 -8 C-18 -6,-22 -2,-20 0 C-22 2,-18 6,-8 8 C6 12,18 9,22 0 Z" fill="#e36b2c"/>
+        <path d="M8 -3 C2 -8,-8 -6,-10 0 C-6 4,2 5,8 2 C10 0,10 -1,8 -3 Z" fill="#f7f3ea"/>
+        <path d="M-4 3 C-8 6,-2 7,2 4 Z" fill="#f7f3ea"/>
+        <path d="M-2 -7 C2 -16,8 -14,6 -6" fill="#c4512a"/>
+        <path d="M4 5 C-2 14,10 16,12 6" fill="#f0a070"/>
+        <path d="M16 -1 C20 -6,24 -4,22 0 C24 4,20 6,16 1" fill="#e36b2c"/>
+        <circle cx="18" cy="-1.5" r="1.15" fill="#1a140c"/>
+        <circle cx="18.4" cy="-1.8" r="0.35" fill="#fff"/>
+        <path d="M2 -4 C6 -2,6 2,2 3" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.6"/>
+      </g>`;
+    }
+
+    function koiAt(t) {
+      const c1 = [[36, 150], [120, 156], [150, 62], [230, 96]];
+      const c2 = [[230, 96], [320, 132], [390, 46], [520, 86]];
+      const clamped = Math.min(1, Math.max(0, t));
+      return clamped < 0.5 ? cubic(c1[0], c1[1], c1[2], c1[3], clamped / 0.5) : cubic(c2[0], c2[1], c2[2], c2[3], (clamped - 0.5) / 0.5);
+    }
+
+    function koiSvg(percent, km) {
+      const center = percent == null ? 0.42 : 0.1 + (Math.min(100, Math.max(0, Number(percent))) / 100) * 0.72;
+      const a = Math.max(0.05, center - 0.11);
+      const b = Math.min(0.94, center + 0.11);
+      const here = koiAt(center);
+      const ahead = koiAt(Math.min(0.98, center + 0.04));
+      const angle = Math.atan2(ahead[1] - here[1], ahead[0] - here[0]) * 180 / Math.PI;
+      return `<svg class="viz" viewBox="0 0 560 190" role="img" aria-label="A koi at ${percent == null ? "an unknown" : Math.round(percent)} percent charge, after ${esc(km)} kilometres this week">
+        <path d="M36 150 C 120 156, 150 62, 230 96 C 320 132, 390 46, 520 86" fill="none" stroke="rgba(142,184,192,0.55)" stroke-width="1.2"/>
+        <path d="M48 162 C 140 168, 180 92, 250 112 C 340 138, 400 70, 530 102" fill="none" stroke="rgba(240,226,196,0.18)" stroke-width="0.8"/>
+        <g data-koi data-a="${a.toFixed(3)}" data-b="${b.toFixed(3)}" transform="translate(${here[0].toFixed(1)} ${here[1].toFixed(1)}) rotate(${angle.toFixed(1)}) scale(1.7)">${koiBody()}</g>
+      </svg>
+      <p class="muted">${percent == null ? "The car has not reported a charge." : Math.round(percent) + "% full."} ${esc(km)} km on the week.</p>`;
+    }
+
+    function mountKoi() {
+      const fish = document.querySelector("[data-koi]");
+      if (!fish || fish.dataset.bound) return;
+      fish.dataset.bound = "1";
+      const from = Number(fish.dataset.a);
+      const to = Number(fish.dataset.b);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const started = performance.now();
+      const frame = (now) => {
+        if (!fish.isConnected) return;
+        const wave = (Math.sin(((now - started) / 7000) * Math.PI) + 1) / 2;
+        const t = from + (to - from) * wave;
+        const point = koiAt(t);
+        const next = koiAt(Math.min(0.98, t + 0.035));
+        const angle = Math.atan2(next[1] - point[1], next[0] - point[0]) * 180 / Math.PI;
+        fish.setAttribute("transform", `translate(${point[0].toFixed(1)} ${point[1].toFixed(1)}) rotate(${angle.toFixed(1)}) scale(1.7)`);
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    }
+
+    function mapHtml() {
+      return `<svg class="viz" viewBox="0 0 720 320" role="img" aria-label="A stylised ink map of a coarse area about 20 kilometres across. The house is not shown.">
+        <defs>
+          <filter id="inkEdge" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="0.6"/></filter>
+        </defs>
+        <rect width="720" height="320" rx="18" fill="#e6dfd0"/>
+        <g stroke="#c9c1b0" stroke-width="0.6" opacity="0.7">
+          ${Array.from({ length: 9 }, (_, i) => `<line x1="${40 + i * 80}" y1="16" x2="${40 + i * 80}" y2="304"/>`).join("")}
+          ${Array.from({ length: 5 }, (_, i) => `<line x1="16" y1="${36 + i * 58}" x2="704" y2="${36 + i * 58}"/>`).join("")}
+        </g>
+        <path filter="url(#inkEdge)" d="M40 210 C 80 160, 120 150, 180 170 C 230 188, 250 120, 310 110 C 380 98, 400 150, 470 140 C 540 130, 560 80, 640 96 C 690 108, 700 160, 690 200 C 670 250, 600 230, 540 250 C 460 276, 400 240, 330 260 C 240 286, 160 250, 90 260 C 50 266, 30 240, 40 210 Z" fill="#2c3834" opacity="0.88"/>
+        <path d="M120 188 C 180 170, 220 190, 280 176 C 340 162, 360 200, 430 188" fill="none" stroke="#d5ddd6" stroke-width="1.4" opacity="0.55"/>
+        <path d="M80 250 C 160 230, 240 250, 340 236 C 460 218, 560 246, 660 228" fill="none" stroke="#8aa097" stroke-width="0.7"/>
+        <path d="M60 120 C 150 100, 240 128, 360 108 C 480 88, 580 120, 700 96" fill="none" stroke="#8aa097" stroke-width="0.7"/>
+        <ellipse cx="360" cy="168" rx="168" ry="72" fill="none" stroke="#8a6a32" stroke-width="1.4"/>
+        <ellipse cx="360" cy="168" rx="118" ry="50" fill="rgba(143,191,168,0.18)" stroke="#5d8d78" stroke-width="0.8"/>
+        <circle cx="360" cy="168" r="3" fill="#8a6a32"/>
+        <g transform="translate(78 64)" font-family="Lotus Sans, sans-serif" fill="#3c342c" font-size="11">
+          <circle r="16" fill="none" stroke="#3c342c"/>
+          <path d="M0 -12 V12 M-12 0 H12" stroke="#3c342c" stroke-width="0.6"/>
+          <text y="-20" text-anchor="middle" font-size="9" letter-spacing="0.12em">N</text>
+        </g>
+        <g transform="translate(78 250)">
+          <circle r="22" fill="#9c3b3b"/>
+          <text y="6" text-anchor="middle" fill="#f6efe6" font-family="Lotus Seal, Lotus Serif, serif" font-size="16">白</text>
+        </g>
+        <text x="360" y="292" text-anchor="middle" fill="#3c342c" font-family="Lotus Serif, Georgia, serif" font-size="16">about twenty kilometres</text>
+      </svg>
+      <p class="muted">About 20 km across. The house is not drawn. Trips from the last day stay off this pond.</p>`;
+    }
+
+    function dashboard(data) {
       const e = data.energy || {};
       const v = data.vehicle || {};
-      const s = data.score || {};
-      const share = Math.round((s.solarShare || 0) * 100);
-      const gridLabel = Math.abs(e.gridW || 0) < 50 ? "Grid quiet" : ((e.gridW || 0) < 0 ? "Exporting" : "Importing");
-      const batteryLabel = (e.batteryW || 0) >= 0 ? "Charging" : "Discharging";
       const sunny = (e.solarW || 0) > 200;
-      const hero = sunny
-        ? `${kw(e.solarW)}<em>kW solar</em>`
-        : `${v.batteryPercent == null ? "—" : Math.round(v.batteryPercent)}<em>% in the car</em>`;
-      return `
+      const gridLabel = Math.abs(e.gridW || 0) < 50 ? "Grid quiet" : ((e.gridW || 0) < 0 ? "Leaving" : "Arriving");
+      const batteryLabel = (e.batteryW || 0) >= 0 ? "Taking" : "Giving";
+      return `<div class="board">
+        <section class="card span2 hero">
+          <svg class="hero-wash" viewBox="0 0 1000 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+            <defs><filter id="mist"><feGaussianBlur stdDeviation="8"/></filter></defs>
+            <path d="M0 230 C 120 180, 180 120, 280 142 C 390 166, 420 78, 530 102 C 650 128, 700 64, 820 98 C 900 122, 960 170, 1000 148 L 1000 420 L 0 420 Z" fill="#31463e" opacity="0.55"/>
+            <path d="M0 280 C 160 230, 240 200, 360 228 C 500 258, 540 176, 680 196 C 800 214, 900 250, 1000 228 L 1000 420 L 0 420 Z" fill="#243830" opacity="0.72"/>
+            <ellipse cx="280" cy="230" rx="240" ry="40" fill="#e7efe8" opacity="0.14" filter="url(#mist)"/>
+            <ellipse cx="700" cy="200" rx="280" ry="32" fill="#f6f3ea" opacity="0.1" filter="url(#mist)"/>
+          </svg>
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <p class="kicker">${esc(data.vehicleName || "White Lotus")} · ${data.stale ? "the last note is old" : "live"}</p>
+              <h1>${sunny ? "The roof is <em>giving</em>" : "The roof is <em>quiet</em>"}</h1>
+              <p class="lede">Sun, house, battery, grid and the car, held in one pond.</p>
+              <p class="num">${sunny ? kw(e.solarW) : (v.batteryPercent == null ? "—" : Math.round(v.batteryPercent))}<em>${sunny ? "kW" : "% in the car"}</em></p>
+              <div class="figure-row">
+                <div class="figure"><b>${kw(e.homeW)}</b><span>House kW</span></div>
+                <div class="figure"><b>${e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%"}</b><span>Battery ${batteryLabel.toLowerCase()}</span></div>
+                <div class="figure"><b>${kw(Math.abs(e.gridW || 0))}</b><span>${gridLabel}</span></div>
+                <div class="figure"><b>${esc(v.chargingState || (v.online ? "Online" : "Asleep"))}</b><span>Car</span></div>
+              </div>
+            </div>
+            <div class="hero-lotus">${sealLotus()}</div>
+          </div>
+        </section>
         <section class="card span2">
-          <p class="kicker">${esc(data.vehicleName || "White Lotus")} · ${sunny ? "generating" : "roof is quiet"} · ${data.stale ? "waiting for a fresh sample" : "live"}</p>
-          <p class="solar-num">${hero}</p>
-          <div class="stats">
-            <div class="stat"><b>${kw(e.homeW)}</b><span>Home kW</span></div>
-            <div class="stat"><b>${e.batterySoc == null ? "—" : Math.round(e.batterySoc) + "%"}</b><span>Battery · ${batteryLabel}</span></div>
-            <div class="stat"><b>${kw(Math.abs(e.gridW || 0))}</b><span>${gridLabel}</span></div>
-            <div class="stat"><b>${v.batteryPercent == null ? "—" : Math.round(v.batteryPercent) + "%"}</b><span>Car · ${esc(v.chargingState || (v.online ? "Online" : "Asleep"))}</span></div>
-          </div>
+          <p class="kicker">Ink flow</p>
+          <h2>Where the watts travel</h2>
+          ${flowSvg(e, v)}
         </section>
         <section class="card">
-          <p class="kicker">Last 24 hours</p>
-          ${chart(data.history)}
+          <p class="kicker">Home battery</p>
+          <h2>The lotus</h2>
+          <div class="lotus-wrap">${lotusSvg(e.batterySoc)}</div>
+          <p class="muted">Petals open as the house battery fills.</p>
         </section>
         <section class="card">
-          <p class="kicker">Where the watts are going</p>
-          <div class="stats split">
-            <div class="stat"><b>${kw(e.solarW)}</b><span>From the roof</span></div>
-            <div class="stat"><b>${kw(e.homeW)}</b><span>Into the house</span></div>
-            <div class="stat"><b>${kw(Math.abs(e.batteryW || 0))}</b><span>Battery ${batteryLabel.toLowerCase()}</span></div>
-            <div class="stat"><b>${kw(Math.abs(e.gridW || 0))}</b><span>${gridLabel}</span></div>
-          </div>
-          <p>Live powers only. The car's own battery is separate from the home battery.</p>
+          <p class="kicker">Today</p>
+          <h2>Sun arc</h2>
+          ${sunSvg(data.history, data.timeZone)}
+        </section>
+        <section class="card span2">
+          <p class="kicker">This week</p>
+          <h2>Raked garden</h2>
+          ${gardenSvg(data.score)}
         </section>
         <section class="card">
-          <p class="kicker">Solar score · this week</p>
-          <div class="score"><div><strong>${esc(s.kmDriven ?? 0)}</strong><span class="kicker">km driven</span></div><div><strong>${share}%</strong><span class="kicker">from live solar</span></div></div>
-          <div class="bar"><i style="width:${share}%"></i></div>
-          <p>${esc(Number(s.solarKwh || 0).toFixed(1))} kWh of charging from the roof, ${esc(Number(s.gridKwh || 0).toFixed(1))} kWh from the grid. About ${esc(money(s.dollarsSaved, s.currency))} kept off the bill.</p>
+          <p class="kicker">Days</p>
+          <h2>Self-sufficiency</h2>
+          ${heatHtml(data.days)}
         </section>
         <section class="card">
-          <p class="kicker">${exact ? "Exact position · owner only" : "Coarse area · 20 km"}</p>
-          ${exact ? `<p class="exact">${esc(Number(exact.lat).toFixed(5))}, ${esc(Number(exact.lon).toFixed(5))}</p><p>${exact.sample ? "Sample position for this preview." : "Live vehicle position."}</p>` : `<div class="map"><div class="blob"></div><p>The house is not on this map. Recent trips are held back 24 hours.</p></div>`}
-        </section>`;
+          <p class="kicker">The car</p>
+          <h2>Charge sessions</h2>
+          ${sessionsHtml(data.sessions)}
+        </section>
+        <section class="card">
+          <p class="kicker">The grid</p>
+          <h2>Balance</h2>
+          ${balanceSvg(data.history)}
+        </section>
+        <section class="card">
+          <p class="kicker">What was not burned</p>
+          <h2>Blossoms</h2>
+          ${blossomSvg(data.score && data.score.solarKwh)}
+        </section>
+        <section class="card">
+          <p class="kicker">White Lotus</p>
+          <h2>The koi</h2>
+          ${koiSvg(v.batteryPercent, data.score ? data.score.kmDriven : 0)}
+        </section>
+        <section class="card span2">
+          <p class="kicker">Place</p>
+          <h2>A wide circle</h2>
+          ${mapHtml()}
+        </section>
+      </div>`;
     }
 
     async function showPublic() {
-      app.innerHTML = "<p class='kicker'>Loading the house…</p>";
-      const response = await fetch("/api/public/dashboard");
-      const data = await response.json();
-      app.innerHTML = `<div class="board">${dashboardHtml(data, null)}</div>`;
+      app.innerHTML = "<p class='kicker'>The pond is settling…</p>";
+      try {
+        const response = await fetch("/api/public/dashboard");
+        if (!response.ok) throw new Error("The house did not answer");
+        app.innerHTML = dashboard(await response.json());
+        mountKoi();
+      } catch (error) {
+        app.innerHTML = `<section class="card"><h1>The pond is still</h1><p class="muted">${esc(error.message || "Nothing to show yet.")}</p></section>`;
+      }
     }
 
     async function showLogin() {
-      const status = await fetch("/api/auth/status").then((r) => r.json());
+      const status = await fetch("/api/auth/status").then((r) => r.json()).catch(() => ({ passkeys: 0 }));
       const register = status.passkeys === 0;
-      app.innerHTML = `<section class="card login">
+      app.innerHTML = `<div class="stage"><section class="card login">
+        <div class="login-lotus">${sealLotus()}</div>
         <p class="kicker">Owner</p>
-        <h1>${register ? "Create the passkey" : "Sign in"}</h1>
-        <p>${register ? "One passkey, then registration locks. If a setup code was configured, it is required for this first passkey." : "This desk only opens with the owner's passkey."}</p>
-        ${register ? '<label>Setup code<input id="setup" type="password" autocomplete="off"></label>' : ""}
+        <h1>${register ? "A first key" : "Enter quietly"}</h1>
+        <p class="muted">${register ? "One passkey, then the door locks. A setup code is required when one has been set." : "Only the owner's passkey opens the command desk."}</p>
+        ${register ? '<label class="field"><span>Setup code</span><input id="setup" type="password" autocomplete="off"></label>' : ""}
         <p class="error" id="err"></p>
         <button class="primary" id="go" type="button">${register ? "Create passkey" : "Use passkey"}</button>
-      </section>`;
+      </section></div>`;
       document.getElementById("go").onclick = async () => {
         const err = document.getElementById("err");
         err.textContent = "";
@@ -250,20 +925,30 @@
     }
 
     function controlDesk(model, preview) {
-      const data = model.dashboard;
-      const settings = model.settings;
+      const data = model.dashboard || { energy: {}, vehicle: {} };
+      const settings = model.settings || { chargeLimit: 80, amps: 32, chargeSoc: 80 };
+      const e = data.energy || {};
       app.innerHTML = `<div class="board controls">
-        ${preview ? '<p class="banner span2">Mock preview. Buttons ask for confirmation and then stop. Nothing is sent.</p>' : ""}
+        <div class="desk-title span2">
+          <p class="kicker">Command desk</p>
+          <h1>Held <em>quietly</em></h1>
+        </div>
+        ${preview ? '<p class="banner span2">A preview. Confirmation is asked, and nothing is sent.</p>' : ""}
         ${preview ? "" : connectionsCard(model)}
         <section class="card">
-          <p class="kicker">Plug & charge</p>
-          <h2>One button</h2>
-          <p id="plug-message">${esc(model.plug.message)}</p>
+          <p class="kicker">Plug and charge</p>
+          <h2>One gesture</h2>
+          <p id="plug-message">${esc(model.plug?.message || "Idle")}</p>
           <div class="stepper" id="steps"></div>
           <div class="row"><button class="primary" id="plug" type="button">Plug & charge</button><button id="plug-cancel" type="button">Cancel</button></div>
           <div class="row" style="margin-top:14px"><button id="start" type="button">Start charging</button><button class="danger" id="stop" type="button">Stop charging</button></div>
         </section>
         <section class="card">
+          <p class="kicker">The house right now</p>
+          <div class="lotus-wrap">${lotusSvg(e.batterySoc)}</div>
+          <p class="muted">Car ${esc(data.vehicle?.batteryPercent ?? "—")}% · ${esc(data.vehicle?.chargingState || "unknown")}</p>
+        </section>
+        <section class="card span2">
           <p class="kicker">Limits</p>
           <label class="slider"><span>Tesla charge limit <b id="limit-label">${esc(settings.chargeLimit)}%</b></span><input id="limit" type="range" min="50" max="100" value="${esc(settings.chargeLimit)}"></label>
           <label class="slider"><span>Tesla charging amps <b id="amps-label">${esc(settings.amps)} A</b></span><input id="amps" type="range" min="5" max="32" value="${esc(settings.amps)}"></label>
@@ -273,7 +958,7 @@
             <button data-apply="amps" type="button">Apply amps</button>
             <button data-apply="soc" type="button">Apply battery limit</button>
           </div>
-          <p class="kicker" style="margin-top:18px">Charger mode</p>
+          <p class="kicker" style="margin-top:18px">Charger and climate</p>
           <div class="row">
             <button data-mode="pv_surplus" type="button">Solar only</button>
             <button data-mode="fast" type="button">Fast</button>
@@ -282,13 +967,12 @@
           </div>
           <p class="error" id="err"></p>
         </section>
-        <section class="card">
+        <section class="card span2">
           <p class="kicker">Exact position · owner only</p>
-          ${model.exact ? `<p class="exact">${esc(Number(model.exact.lat).toFixed(5))}, ${esc(Number(model.exact.lon).toFixed(5))}</p><p>${model.exact.sample ? "Sample position for this preview. The public map only shows a 20 km cell." : "Live vehicle position. It is not on the public dashboard."}</p>` : "<p>No position stored yet.</p>"}
-          <p>Car ${esc(data.vehicle?.batteryPercent ?? "—")}% · ${esc(data.vehicle?.chargingState || "unknown")}</p>
+          ${model.exact ? `<p class="exact">${esc(Number(model.exact.lat).toFixed(5))}, ${esc(Number(model.exact.lon).toFixed(5))}</p><p class="muted">${model.exact.sample ? "A sample point for this preview. The public pond only shows a 20 km wash." : "Live vehicle position. It is not on the public pond."}</p>` : "<p class='muted'>No position stored yet.</p>"}
         </section>
       </div>`;
-      paintSteps(model.plug.phase);
+      paintSteps(model.plug?.phase);
       wireSliders();
       wireCommands(preview);
     }
@@ -298,18 +982,19 @@
       const sigen = Boolean(model.status?.sigen);
       return `<section class="card span2">
           <p class="kicker">Connections</p>
-          <p>${tesla ? "Tesla connected ✓" : "Tesla not connected"} · ${sigen ? "Sigen connected ✓" : "Sigen not connected"}</p>
+          <h2>${tesla && sigen ? "Both shores are tied" : "Tie the shores"}</h2>
+          <p>${tesla ? "Tesla is connected." : "Tesla is not connected."} ${sigen ? "Sigen is connected." : "Sigen is not connected."}</p>
           <div class="row">
             <button class="${tesla ? "" : "primary"}" id="tesla-start" type="button">${tesla ? "Reconnect Tesla" : "Connect Tesla"}</button>
             <button class="${sigen ? "" : "primary"}" id="sigen-start" type="button">${sigen ? "Reconnect Sigen" : "Connect Sigen"}</button>
           </div>
           <p class="error" id="conn-err"></p>
-          <details style="margin-top:12px"><summary>Manual fallback</summary>
-            <label>Paste the Tesla callback URL<textarea id="tesla-url" rows="3"></textarea></label>
+          <details><summary>Manual fallback</summary>
+            <label class="field"><span>Paste the Tesla callback URL</span><textarea id="tesla-url" rows="3"></textarea></label>
             <button id="tesla-finish" type="button">Save Tesla connection</button>
             <p id="sigen-url"></p>
-            <label>Sigen access token<input id="sigen-access" type="password" autocomplete="off"></label>
-            <label>Sigen refresh token<input id="sigen-refresh" type="password" autocomplete="off"></label>
+            <label class="field"><span>Sigen access token</span><input id="sigen-access" type="password" autocomplete="off"></label>
+            <label class="field"><span>Sigen refresh token</span><input id="sigen-refresh" type="password" autocomplete="off"></label>
             <button id="sigen-import" type="button">Import Sigen tokens</button>
           </details>
         </section>`;
@@ -319,12 +1004,15 @@
       const order = ["opening_port", "waiting_for_cable", "starting_charge", "charging"];
       const labels = ["Open port", "Wait for cable", "Start charger", "Charging"];
       const active = order.indexOf(phase);
-      document.getElementById("steps").innerHTML = labels.map((label, i) => `<b class="${i <= active ? "on" : ""}">${label}</b>`).join("");
+      const steps = document.getElementById("steps");
+      if (!steps) return;
+      steps.innerHTML = labels.map((label, i) => `<b class="${i <= active ? "on" : ""}">${label}</b>`).join("");
     }
 
     function wireSliders() {
       for (const [id, label, suffix] of [["limit", "limit-label", "%"], ["amps", "amps-label", " A"], ["soc", "soc-label", "%"]]) {
         const input = document.getElementById(id);
+        if (!input) continue;
         input.oninput = () => { document.getElementById(label).textContent = input.value + suffix; };
       }
     }
@@ -332,7 +1020,8 @@
     async function post(path, body, title, detail, preview) {
       if (!(await ask(title, detail))) return null;
       if (preview) {
-        document.getElementById("err").textContent = "Mocked. Nothing was sent.";
+        const err = document.getElementById("err");
+        if (err) err.textContent = "Nothing was sent.";
         return { mocked: true };
       }
       const session = await fetch("/api/session").then((r) => r.json());
@@ -348,11 +1037,11 @@
 
     function wireCommands(preview) {
       const err = document.getElementById("err");
-      const run = (fn) => fn().catch((error) => { err.textContent = error.message || "Command failed"; });
+      const run = (fn) => fn().catch((error) => { if (err) err.textContent = error.message || "Command failed"; });
       document.getElementById("plug").onclick = () => run(async () => {
         const state = await post("/api/controls/plug-charge", {}, "Plug and charge", "Open the charge port, watch for the cable for up to 5 minutes, then start the charger.", preview);
         if (state && !state.mocked) { document.getElementById("plug-message").textContent = state.message; paintSteps(state.phase); watchPlug(); }
-        if (state && state.mocked) { document.getElementById("plug-message").textContent = "Port would open, then the desk would wait for the cable."; paintSteps("waiting_for_cable"); }
+        if (state && state.mocked) { document.getElementById("plug-message").textContent = "The port would open, then the desk would wait for the cable."; paintSteps("waiting_for_cable"); }
       });
       document.getElementById("plug-cancel").onclick = () => run(() => post("/api/controls/plug-charge/cancel", {}, "Cancel plug and charge", "Stop waiting for the cable.", preview));
       document.getElementById("start").onclick = () => run(() => post("/api/controls/charge/start", {}, "Start charging", "Start the Sigen AC charger and send Tesla charge start.", preview));
@@ -423,7 +1112,6 @@
       try {
         controlDesk(state, false);
       } catch (error) {
-        // Never lose the connect buttons because live data is missing.
         app.innerHTML = `<div class="board controls">${connectionsCard(state)}</div>`;
         wireOwner();
       }
