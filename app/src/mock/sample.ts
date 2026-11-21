@@ -1,6 +1,7 @@
 import type { HistoryPoint, PrivateSnapshot, PublicEnergy } from "../energy/public";
 import { attributeChargeInterval, solarScore, type FlowSample, type OdometerSample } from "../energy/score";
 import { weekRange, zonedParts } from "../energy/time";
+import { chargeSessions, dayMarks } from "../energy/views";
 import type { TrailSample } from "../location/fuzz";
 
 /** A public waterfront used only as sample data. It is not a home. */
@@ -87,6 +88,7 @@ export function illustrativeSnapshot(now: number, timeZone: string, price: numbe
     batteryW: latest?.batteryW ?? 0,
     batterySoc: latest?.batterySoc ?? null,
     gridW: latest?.gridW ?? 0,
+    chargerW: latest?.chargerW ?? 0,
   };
   return {
     asOf: now,
@@ -106,5 +108,8 @@ export function illustrativeSnapshot(now: number, timeZone: string, price: numbe
     home: null,
     trail,
     history,
+    timeZone,
+    days: dayMarks(points, timeZone),
+    sessions: chargeSessions(charge),
   };
 }

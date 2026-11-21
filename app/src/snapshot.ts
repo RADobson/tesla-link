@@ -3,11 +3,13 @@ import { chargeSince, energyHistory, latestEnergy, latestVehicle, odometerSince,
 import type { PrivateSnapshot } from "./energy/public";
 import { solarScore } from "./energy/score";
 import { weekRange } from "./energy/time";
+import { chargeSessions, dayMarks } from "./energy/views";
 import { illustrativeSnapshot } from "./mock/sample";
 
 export async function loadSnapshot(env: Env): Promise<PrivateSnapshot> {
   const now = Date.now();
-  const history = await energyHistory(env.DB, now - 24 * 60 * 60 * 1000);
+  const longHistory = await energyHistory(env.DB, now - 21 * 24 * 60 * 60 * 1000);
+  const history = longHistory.filter((point) => point.ts >= now - 24 * 60 * 60 * 1000);
   if (mocksEnabled(env) && history.length < 8) {
     return illustrativeSnapshot(now, env.HOUSE_TIMEZONE, gridPrice(env), env.CURRENCY, env.VEHICLE_NAME);
   }
@@ -26,8 +28,9 @@ export async function loadSnapshot(env: Env): Promise<PrivateSnapshot> {
           batteryW: energy.batteryW,
           batterySoc: energy.batterySoc,
           gridW: energy.gridW,
+          chargerW: energy.chargerW,
         }
-      : { solarW: 0, homeW: 0, batteryW: 0, batterySoc: null, gridW: 0 },
+      : { solarW: 0, homeW: 0, batteryW: 0, batterySoc: null, gridW: 0, chargerW: 0 },
     vehicle: vehicle ?? {
       online: false,
       batteryPercent: null,
@@ -46,5 +49,8 @@ export async function loadSnapshot(env: Env): Promise<PrivateSnapshot> {
     home: homePoint(env),
     trail: await privateTrail(env.DB, now - 8 * 24 * 60 * 60 * 1000),
     history,
+    timeZone: env.HOUSE_TIMEZONE,
+    days: dayMarks(longHistory, env.HOUSE_TIMEZONE),
+    sessions: chargeSessions(await chargeSince(env.DB, now - 21 * 24 * 60 * 60 * 1000)),
   };
 }

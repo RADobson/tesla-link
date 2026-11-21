@@ -1,5 +1,6 @@
 import { coarseArea, delayedTrail, findForbiddenKeys, type LatLon, type TrailSample } from "../location/fuzz";
 import type { SolarScore } from "./score";
+import type { ChargeSession, DayMark } from "./views";
 
 export interface PublicEnergy {
   solarW: number;
@@ -7,6 +8,7 @@ export interface PublicEnergy {
   batteryW: number;
   batterySoc: number | null;
   gridW: number;
+  chargerW?: number | null;
 }
 
 export interface PublicVehicle {
@@ -41,6 +43,9 @@ export interface PublicDashboard {
   } | null;
   trail: { mode: "delayed-24h"; points: { ts: number; center: LatLon; radiusMeters: number }[] };
   history: HistoryPoint[];
+  timeZone: string;
+  days: DayMark[];
+  sessions: ChargeSession[];
 }
 
 export interface PrivateSnapshot {
@@ -55,6 +60,9 @@ export interface PrivateSnapshot {
   home: LatLon | null;
   trail: TrailSample[];
   history: HistoryPoint[];
+  timeZone?: string;
+  days?: DayMark[];
+  sessions?: ChargeSession[];
 }
 
 export function toPublicDashboard(input: PrivateSnapshot, now: number): PublicDashboard {
@@ -84,6 +92,9 @@ export function toPublicDashboard(input: PrivateSnapshot, now: number): PublicDa
       })),
     },
     history: input.history,
+    timeZone: input.timeZone ?? "Australia/Sydney",
+    days: input.days ?? [],
+    sessions: input.sessions ?? [],
   };
   const leaks = findForbiddenKeys(dashboard);
   if (leaks.length > 0) throw new Error("public_leak");
