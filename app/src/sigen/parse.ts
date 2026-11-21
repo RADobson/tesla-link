@@ -90,19 +90,19 @@ function watts(value: number): number {
 function directionSign(direction: string | undefined, intoPositive: boolean): number | null {
   if (!direction) return null;
   const text = direction.toLowerCase();
-  const into = ["charge", "charging", "import", "buy", "in"].some((word) => text.includes(word));
-  const out = ["discharge", "discharging", "export", "sell", "out"].some((word) => text.includes(word));
+  const out = ["discharg", "export", "sell", "feed", "out"].some((word) => text.includes(word));
+  const into = !out && ["charg", "import", "buy", "in"].some((word) => text.includes(word));
   if (into === out) return null;
   if (into) return intoPositive ? 1 : -1;
   return intoPositive ? -1 : 1;
 }
 
-function signedWatts(power: number, direction: string | undefined, intoPositive: boolean): number {
+function signedWatts(power: number, direction: string | undefined, intoPositive: boolean, rawSign = 1): number {
   const magnitude = Math.abs(watts(power));
+  if (magnitude === 0) return 0;
   const sign = directionSign(direction, intoPositive);
   if (sign !== null) return sign * magnitude;
-  const raw = watts(power);
-  return intoPositive ? raw : raw;
+  return rawSign * watts(power);
 }
 
 function nested(record: Record<string, unknown>, names: string[]): Record<string, unknown> | null {
@@ -122,21 +122,22 @@ export function normalizeEnergyFlow(input: unknown): NormalizedFlow {
   const grid = nested(body, ["grid"]) ?? body;
   const ev = nested(body, ["ev", "charger", "evac", "ev_ac"]);
 
-  const solar = numberAt(pv, ["power_kw", "power", "pvPower", "pv_power", "solarPower", "solar_power", "solarW"]);
-  const home = numberAt(load, ["power_kw", "power", "loadPower", "load_power", "homePower", "home_w"]);
+  const raw = asRecord(body.raw) ?? {};
+  const solar = numberAt(pv, ["power_kw", "pv_kw", "power", "pvPower", "pv_power", "solarPower", "solar_power", "solarW"]);
+  const home = numberAt(load, ["power_kw", "load_kw", "power", "loadPower", "load_power", "homePower", "home_w"]);
   const batteryPower = numberAt(battery, ["power_kw", "power", "batteryPower", "battery_power"]);
   const batteryDirection = typeof battery.direction === "string" ? battery.direction : undefined;
-  const soc = numberAt(battery, ["soc", "batterySoc", "battery_soc", "percent"]);
+  const soc = numberAt(battery, ["soc_pct", "soc", "batterySoc", "battery_soc", "percent"]) ?? numberAt(body, ["battery_soc_pct"]) ?? numberAt(raw, ["batterySoc"]);
   const gridPower = numberAt(grid, ["power_kw", "power", "gridPower", "grid_power"]);
   const gridDirection = typeof grid.direction === "string" ? grid.direction : undefined;
   const charger = ev ? numberAt(ev, ["power_kw", "power", "evPower", "charger_power"]) : numberAt(body, ["evPower", "chargerPower"]);
 
   return {
-    solarW: solar === null ? 0 : Math.abs(watts(solar)),
-    homeW: home === null ? 0 : Math.abs(watts(home)),
+    solarW: Math.abs(watts(solar ?? numberAt(raw, ["pvPower"]) ?? 0)),
+    homeW: Math.abs(watts(home ?? numberAt(raw, ["loadPower"]) ?? 0)),
     batteryW: batteryPower === null ? 0 : signedWatts(batteryPower, batteryDirection, true),
     batterySoc: soc,
-    gridW: gridPower === null ? 0 : signedWatts(gridPower, gridDirection, true),
+    gridW: gridPower === null ? 0 : signedWatts(gridPower, gridDirection, true, -1),
     chargerW: charger === null ? null : Math.abs(watts(charger)),
   };
 }
