@@ -1,0 +1,78 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "white-lotus",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat"],
+  // Query strings on /callback carry a one-time OAuth code. Keep them out of logs.
+  "observability": {
+    "enabled": true,
+    "redact_query_string": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 1 }
+  },
+  "workers_dev": true,
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "rules": [
+    { "type": "Text", "globs": ["**/*.pem", "**/*.html"], "fallthrough": true }
+  ],
+  // Production-shaped defaults. `npm run dev` overrides the local-only vars.
+  // Placeholder D1/KV ids are intentional: deploy does not create resources.
+  // Replace them after you create the databases named in README.
+  "vars": {
+    "MOCK_INTEGRATIONS": "false",
+    "APP_ORIGIN": "https://tesla.dobson.website",
+    "RP_ID": "tesla.dobson.website",
+    "RP_NAME": "White Lotus",
+    "TESLA_CLIENT_ID": "1b46453e-986c-4013-aa41-22caa1c5ee6c",
+    "TESLA_FLEET_API": "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/",
+    "TESLA_TOKEN_URL": "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+    "TESLA_AUTH_URL": "https://auth.tesla.com/oauth2/v3/authorize",
+    "TESLA_AUDIENCE": "https://fleet-api.prd.na.vn.cloud.tesla.com",
+    "TESLA_REDIRECT_URI": "https://tesla.dobson.website/callback",
+    "TESLA_SCOPES": "openid offline_access user_data vehicle_device_data vehicle_location vehicle_cmds vehicle_charging_cmds",
+    "SIGEN_MCP_URL": "https://api-aus.sigencloud.com/sigen-mcp/mcp",
+    "SIGEN_TOKEN_URL": "https://api-aus.sigencloud.com/auth/oauth/token",
+    "SIGEN_LOGIN_URL": "https://developer.sigencloud.com/mcp/authorization",
+    "SIGEN_REGION": "aus",
+    "SIGEN_STATION_ID": "2610281435597087",
+    "VEHICLE_NAME": "White Lotus",
+    "GRID_PRICE_PER_KWH": "0.35",
+    "CURRENCY": "AUD",
+    "HOUSE_TIMEZONE": "Australia/Sydney"
+  },
+  "secrets": {
+    "required": [
+      "TESLA_CLIENT_SECRET",
+      "TESLA_PRIVATE_KEY",
+      "SETUP_CODE",
+      "HOME_LATITUDE",
+      "HOME_LONGITUDE"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "white-lotus",
+      "database_id": "079c2a9b-0e23-4a6d-ae46-86f7bb07dc18",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT",
+      "id": "528dd97a459a49479b79e648f4a47d78"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "TOKEN_VAULT", "class_name": "TokenVault" },
+      { "name": "PLUG_CHARGE", "class_name": "PlugCharge" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["TokenVault", "PlugCharge"] }
+  ]
+}
